@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.20.1 ? 2026-11-21
+
+- Open selected live channels in S0undTV instead of the official Twitch TV app.
+- Retain Twitch broadcaster IDs and use channel links supported by the installed S0undTV beta on cold and repeat launches.
+- Show an installation/update message if S0undTV cannot handle the channel.
+- Update the website and setup guide to describe S0undTV playback.
+
+Checked on Google TV Streamer / Android 14: a channel link started live LIRIK playback in S0undTV. The launcher still uses Twitch sign-in to retrieve followed live channels; S0undTV is the playback app.
+
 ## 0.20.0 — 2026-11-21
 
 First public preview release.

@@ -39,12 +39,16 @@ keyPassword=YOUR_PRIVATE_KEY_PASSWORD
 
 Use forward slashes for Windows paths. Build with `./gradlew :app:assembleRelease :app:lintRelease`. Without `signing.properties`, release output is unsigned. Debug builds remain independently debug-signed.
 
+Every completed app update must be published to GitHub and accompanied by a dated website update. This is the project release workflow.
+
 For each release:
 
 1. Increment `versionCode` and `versionName` in `app/build.gradle`; update the changelog, setup/download filename references and showcase version.
 2. Run build/lint and JVM checks. Exercise changed connection flows and remote navigation on a TV when available; state any unverified behavior in release notes.
 3. Verify the APK with Android SDK `apksigner verify --verbose --print-certs`. Ensure the release manifest is not debuggable and the key matches the previous release.
 4. Name the signed output `VueTV-VERSION.apk`; generate `SHA256SUMS.txt`. Publish those assets with the release tag pointing to the tested commit. Include install instructions and preview limitations.
+
+5. Push the tested source and showcase update to `main`; publish the signed assets as a GitHub release from the same commit. Verify Android checks, GitHub Pages deployment, the website update and release downloads.
 
 CI intentionally does not have the private release key and uploads only a development APK artifact. Publishing a signed release is a maintainer operation.
 

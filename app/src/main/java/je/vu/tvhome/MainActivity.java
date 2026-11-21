@@ -97,7 +97,7 @@ public class MainActivity extends Activity {
     };
     static class Media {
         String title, detail, image, provider, id;
-        String requestType="";
+        String requestType="",broadcasterId="";
         boolean topPick,metadataLoading,metadataLoaded;
         String tmdbId="",libraryMeta="",mediaType="Movie";
         double communityRating=-1,criticRating=-1;
@@ -462,8 +462,10 @@ public class MainActivity extends Activity {
     void open(Media m) {
         if(!m.requestType.isEmpty()){requests.details(m);return;}
         if(m.provider.equals("Twitch")) {
-            if(!openLink("tv.twitch.android.app","twitch://stream/"+Uri.encode(m.id)))
-                toast("The installed Twitch app cannot open this channel.");
+            // The installed S0undTV beta handles numeric channel links on cold/warm starts; category 5 is Followed.
+            String link=m.broadcasterId.matches("[0-9]+")?"channel://com.s0und.s0undtv/startstream/"+m.broadcasterId+"/5":"s0undtv://stream/"+Uri.encode(m.id);
+            if(!openLink("com.s0und.s0undtv",link))
+                toast("Install or update S0undTV to open this channel.");
         }else{
             openEmby(m);
         }
@@ -696,7 +698,7 @@ public class MainActivity extends Activity {
         String user=validation.getString("user_id");
         JSONObject data=new JSONObject(cachedGet("https://api.twitch.tv/helix/streams/followed?first=50&user_id="+Uri.encode(user),Map.of("Authorization","Bearer "+token,"Client-Id",client),MINUTE));
         List<Media> result=new ArrayList<>();JSONArray items=data.getJSONArray("data");
-        for(int i=0;i<items.length();i++){JSONObject s=items.getJSONObject(i); result.add(new Media(s.getString("user_name"),"LIVE · "+s.optString("game_name")+" · "+s.optInt("viewer_count")+" watching",s.optString("thumbnail_url").replace("{width}","640").replace("{height}","360"),"Twitch",s.getString("user_login")));}return result;
+        for(int i=0;i<items.length();i++){JSONObject s=items.getJSONObject(i); Media channel=new Media(s.getString("user_name"),"LIVE · "+s.optString("game_name")+" · "+s.optInt("viewer_count")+" watching",s.optString("thumbnail_url").replace("{width}","640").replace("{height}","360"),"Twitch",s.getString("user_login"));channel.broadcasterId=s.getString("user_id");result.add(channel);}return result;
     }
     void openDeviceQuickSettings(){
         // On this Google TV build, SystemUI expands the native dashboard through

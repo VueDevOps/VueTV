@@ -1,0 +1,18 @@
+---
+description: Publish each completed Vue TV update to GitHub and the website.
+alwaysApply: true
+---
+
+# Publish every completed update
+
+The user requires every completed Vue TV app update to include a website update and GitHub publication. This is standing authorization to publish completed, validated project updates through the existing repository and GitHub Pages workflow.
+
+- Follow `docs/DEVELOPMENT.md` for versioning, signing and release validation.
+- Increment the app version; keep APK filenames, changelog, setup guide and showcase version current.
+- Post a dated update on the showcase describing the actual changes.
+- Run relevant build/lint and JVM checks; verify the signed APK uses the existing public release certificate.
+- Commit and push the tested source, documentation and website changes to GitHub.
+- Publish a GitHub release from that commit with the signed APK and SHA256SUMS.txt.
+- Verify GitHub Actions checks, Pages deployment and the public release/download links before reporting completion.
+- Never publish signing keys/passwords, account data, private logs or raw device captures.
+- If publication is blocked, report the specific blocker and completed work; do not describe an unpublished update as released.

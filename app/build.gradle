@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'je.vu.tvhome'
     compileSdk 35
-    defaultConfig { applicationId 'je.vu.tvhome'; minSdk 26; targetSdk 35; versionCode 20; versionName '0.20.0' }
+    defaultConfig { applicationId 'je.vu.tvhome'; minSdk 26; targetSdk 35; versionCode 21; versionName '0.20.1' }
     def signingFile = rootProject.file('signing.properties')
     if (signingFile.exists()) {
         def signing = new Properties()

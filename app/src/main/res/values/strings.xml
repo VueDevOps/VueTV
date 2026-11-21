@@ -1,0 +1,3 @@
+<resources>
+    <string name="home_button_description">Opens Vue TV when you press Home, while keeping Google TV quick settings available. Does not read screen contents. Hold Home for quick settings.</string>
+</resources>

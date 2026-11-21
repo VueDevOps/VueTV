@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Twitch setup · Vue TV</title>
+<style>
+:root{--bg:#101014;--surface:#19191f;--line:#303039;--text:#f2eff7;--muted:#b4aebf;--accent:#c5a3ff;--bright:#a16cff;--good:#a9e1c0}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select{font:inherit}a{color:var(--accent);text-underline-offset:4px}button,a,input,select,summary{outline-offset:5px}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent)}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}button,.button{border:1px solid var(--line);border-radius:10px;background:#24232c;color:var(--text);padding:11px 17px;display:inline-flex;align-items:center;justify-content:center;gap:9px;text-decoration:none;font-weight:600;line-height:1.4}button:hover,.button:hover{border-color:var(--accent)}.primary{background:var(--accent);color:#211334;border-color:var(--accent)}.quiet{background:transparent}header{max-width:1280px;margin:auto;padding:25px 36px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}.brand{font-weight:800;font-size:23px;letter-spacing:-1px}.brand span{font-size:14px;font-weight:500;letter-spacing:0;color:var(--muted);margin-left:16px}.tag{color:var(--muted);font-size:14px}.layout{display:grid;grid-template-columns:265px minmax(0,1fr);gap:64px;max-width:1220px;margin:0 auto;padding:42px 30px 70px}aside{position:sticky;top:25px;align-self:start}.eyebrow{font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:700}.progress-label{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin:12px 0 8px}progress{width:100%;height:6px;border:0;border-radius:5px;overflow:hidden;background:var(--line);accent-color:var(--accent)}progress::-webkit-progress-bar{background:var(--line)}progress::-webkit-progress-value{background:var(--accent)}nav{margin:25px 0}nav button{display:flex;text-align:left;width:100%;background:transparent;border:1px solid transparent;gap:13px;justify-content:flex-start;padding:13px 11px;margin:3px 0;font-size:15px;font-weight:500;color:var(--muted)}nav button[aria-current="step"]{background:#282133;border-color:#5c457d;color:var(--text)}.number{display:grid;place-items:center;width:27px;height:27px;border:1px solid #56505f;border-radius:50%;font-size:13px;flex-shrink:0}.done .number{background:var(--good);color:#14251b;border-color:var(--good)}.side-note{border-top:1px solid var(--line);padding-top:20px;font-size:14px;color:var(--muted)}.side-note strong{color:var(--text)}h1{font-size:clamp(32px,4vw,47px);line-height:1.12;letter-spacing:-1.6px;margin:14px 0 18px;max-width:750px}h2{font-size:27px;line-height:1.25;letter-spacing:-.6px;margin:10px 0 18px}h3{font-size:18px;line-height:1.4;margin:0 0 8px}p{margin:0 0 18px}.intro{font-size:18px;color:var(--muted);max-width:720px}.overview{display:flex;gap:24px;margin:25px 0 34px;padding-bottom:28px;border-bottom:1px solid var(--line);color:var(--muted);font-size:14px}.overview strong{display:block;color:var(--text);font-size:16px}.step{margin-top:20px}.step[hidden]{display:none}.step-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:15px}.device{font-size:13px;text-transform:uppercase;letter-spacing:.09em;background:#25212d;border-radius:6px;padding:5px 10px;color:#d8c4f4}.tasklist{padding-left:23px}.tasklist li{padding:5px 0 8px 6px}.callout{border-left:3px solid var(--accent);background:#201c28;padding:17px 20px;margin:22px 0;border-radius:0 10px 10px 0}.callout p:last-child{margin-bottom:0}.callout.subtle{border-color:#706779;background:#19191f;color:var(--muted)}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.field{padding:17px 0;border-bottom:1px solid var(--line)}.field:first-child{padding-top:0}.field-label{display:block;font-size:14px;font-weight:600;color:var(--muted);margin-bottom:6px}.field-value{display:flex;justify-content:space-between;align-items:center;gap:18px}.field-value strong{font-size:18px;font-weight:600}.hint{font-size:14px;color:var(--muted);margin:6px 0 0}.copy{font-size:14px;padding:7px 12px;flex-shrink:0}.checks{margin:26px 0 18px;border-top:1px solid var(--line);padding-top:18px}.check{display:flex;align-items:flex-start;gap:12px;padding:9px 0;cursor:pointer;font-size:15px}.check input{width:20px;height:20px;accent-color:var(--bright);margin-top:3px;flex-shrink:0}.step-footer{display:flex;justify-content:space-between;gap:15px;margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}.route{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0}.route span{background:#27252e;border:1px solid var(--line);padding:9px 13px;border-radius:8px}.route b{color:var(--muted);font-weight:400}.input-row{display:flex;gap:10px;margin:12px 0}input[type=text]{min-width:0;width:100%;color:var(--text);background:#111116;border:1px solid #544b60;border-radius:9px;padding:12px 14px}.status{font-size:14px;color:var(--muted);min-height:24px}.preview{padding:23px;background:#17151d;border:1px solid #39313f;border-radius:15px;margin:20px 0}.preview-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted)}.preview h3{margin:20px 0 15px}.stream-demo{display:flex;align-items:center;gap:17px;background:#25202e;border-radius:10px;padding:18px}.stream-icon{font-weight:800;font-size:27px;color:var(--accent);width:56px;height:56px;display:grid;place-items:center;background:#382846;border-radius:10px}.live{color:var(--good);font-size:13px;font-weight:700}.stream-demo p{margin:0;font-size:14px;color:var(--muted)}.support{margin-top:48px;padding-top:30px;border-top:1px solid var(--line)}select{width:100%;padding:12px;background:#222129;color:var(--text);border:1px solid #51485d;border-radius:10px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='m5 8 5 5 5-5' fill='none' stroke='%23c5a3ff' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:44px}.answer{padding:18px 0;color:var(--muted)}.answer strong{color:var(--text)}details{padding:15px 0;border-bottom:1px solid var(--line)}summary{cursor:pointer;font-weight:600}details p{padding-top:12px;color:var(--muted);font-size:15px}pre{overflow:auto;padding:17px;background:#0c0c10;border:1px solid var(--line);border-radius:9px;font-size:13px;white-space:pre-wrap;word-break:break-word}code{font-family:ui-monospace,Consolas,monospace;color:#dcc5ff}.completion{padding:22px;background:#18251f;border:1px solid #3d6050;border-radius:12px;margin-top:22px}.completion p{margin:5px 0 0;color:#c1d6c9}.sources{margin-top:35px;padding-top:22px;font-size:14px;color:var(--muted);border-top:1px solid var(--line)}.sources a{margin-right:16px}.utility{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}.utility button{font-size:14px;padding:8px 12px}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}footer{color:var(--muted);font-size:13px;max-width:1220px;margin:auto;padding:0 30px 25px}@media(max-width:850px){.layout{grid-template-columns:1fr;gap:24px;padding:28px 22px 50px}header{padding:20px 22px}.tag{display:none}aside{position:static}nav{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:18px 0 0}nav button{font-size:13px;gap:8px;padding:9px 5px}.side-note{display:none}h1{font-size:36px}.overview{gap:20px}.field-value{align-items:flex-start}}@media(max-width:500px){nav{grid-template-columns:repeat(2,1fr)}.overview{flex-wrap:wrap;gap:14px 25px}.field-value{flex-wrap:wrap;gap:7px}.input-row{flex-wrap:wrap}.input-row button{width:100%}.step-footer button{padding:11px 12px}.brand span{margin-left:10px}.step-heading{align-items:flex-start}}@media print{body{background:white;color:black;font-size:12pt}.layout{display:block;padding:0}.step[hidden]{display:block}.step{break-inside:avoid;margin-top:30px}aside,button,.step-footer,.utility,.support select,.input-row,.status,.checks,header,.overview,.preview,.completion{display:none!important}.callout,.field,.route span{background:white;color:black;border-color:#777}h1{font-size:28pt}h2{font-size:20pt}.intro,.hint,.answer,.sources,footer{color:#333}a,code{color:#222}.support,.sources{break-inside:avoid}.step:not([hidden]){display:block}main{max-width:none}.device{background:white;color:black}}
+</style>
+</head>
+<body>
+<header><div class="brand">vue<span>TV setup guide</span></div><span class="tag">Local page · No account access</span></header>
+<div class="layout">
+<aside aria-label="Setup progress">
+  <div class="eyebrow">Twitch integration</div>
+  <div class="progress-label"><span id="progressText">0 of 6 steps complete</span><span id="percentage">0%</span></div>
+  <progress id="progress" max="6" value="0" aria-label="Completed setup steps"></progress>
+  <nav id="stepNav" aria-label="Setup steps"></nav>
+  <div class="side-note"><strong>What you’re connecting</strong><p>A row in Vue TV Preview showing followed Twitch channels that are live. Your original Google TV home stays available.</p><p id="saveNote">Checklist progress is saved in this browser. Client IDs and sign-in codes are not saved by this page.</p></div>
+</aside>
+<main>
+  <div class="eyebrow">From setup to live streams</div>
+  <h1>Your follows.<br>On your TV home screen.</h1>
+  <p class="intro">Connect Twitch to the Vue TV preview already installed on your streamer. Follow the steps on your computer, then finish sign-in on your phone.</p>
+  <div class="overview"><div><strong>One-time registration</strong>Your own Twitch app</div><div><strong>Read-only access</strong>Your followed channels</div><div><strong>TV code sign-in</strong>No password in this guide</div></div>
+
+  <section class="step" data-step="0" aria-labelledby="title0">
+    <div class="step-heading"><div><div class="eyebrow">Step 1 of 6</div><h2 id="title0" tabindex="-1">Get your account ready</h2></div><span class="device">Computer + TV</span></div>
+    <p>Use the Twitch account whose followed channels you want on the TV. You don’t need to stream or create a channel broadcast.</p>
+    <ol class="tasklist"><li>Sign in to Twitch on your computer.</li><li>Verify your account email and enable two-factor authentication in Twitch’s security settings. Twitch requires both for developer registration.</li><li>On the streamer, open <strong>Vue TV Preview</strong> from your apps. Pressing Home still opens the original Google TV launcher.</li></ol>
+    <div class="actions"><a class="button primary" href="https://www.twitch.tv/settings/security" target="_blank" rel="noopener noreferrer">Open Twitch security settings</a></div>
+    <div class="callout subtle"><strong>Already installed</strong><p>The preview app, remote navigation, and Connections menu were tested on your streamer. Twitch account sign-in and live content have not yet been verified.</p></div>
+    <div class="checks"><label class="check"><input type="checkbox" data-check="account">My Twitch account is ready, and I can open Vue TV Preview.</label></div>
+  </section>
+
+  <section class="step" data-step="1" hidden aria-labelledby="title1">
+    <div class="step-heading"><div><div class="eyebrow">Step 2 of 6</div><h2 id="title1" tabindex="-1">Register your Twitch app</h2></div><span class="device">Computer</span></div>
+    <p>Open the developer console, choose <strong>Applications</strong>, then <strong>Register Your Application</strong>. Use these settings:</p>
+    <div class="field"><span class="field-label">Name</span><div class="field-value"><strong>Vue TV Home — your unique name</strong></div><p class="hint">The name must be unique across Twitch. Add your name or another suffix if it is taken.</p></div>
+    <div class="field"><span class="field-label">OAuth Redirect URLs</span><div class="field-value"><strong><code>http://localhost:3000</code></strong><button class="copy" data-copy="http://localhost:3000">Copy URL</button></div><p class="hint">If the form requires a redirect, add this local callback and click Add. Our TV device-code flow does not use the callback. You do not need a server on port 3000.</p></div>
+    <div class="field"><span class="field-label">Category</span><div class="field-value"><strong>Other</strong></div><p class="hint">Use the closest suitable category if the console offers different choices.</p></div>
+    <div class="field"><span class="field-label">Client Type, if shown</span><div class="field-value"><strong>Public</strong></div><p class="hint">If it is not on this form, check the app’s Manage page after creating it.</p></div>
+    <p style="margin-top:20px">Complete the CAPTCHA if shown, then choose <strong>Create</strong>.</p>
+    <div class="actions"><a class="button primary" href="https://dev.twitch.tv/console/apps" target="_blank" rel="noopener noreferrer">Open Twitch developer console</a></div>
+    <div class="checks"><label class="check"><input type="checkbox" data-check="registered">My new app appears under Developer Applications.</label></div>
+  </section>
+
+  <section class="step" data-step="2" hidden aria-labelledby="title2">
+    <div class="step-heading"><div><div class="eyebrow">Step 3 of 6</div><h2 id="title2" tabindex="-1">Find your public client ID</h2></div><span class="device">Computer</span></div>
+    <ol class="tasklist"><li>Find your app in the console and choose <strong>Manage</strong>.</li><li>Confirm <strong>Client Type: Public</strong>. Save the change if needed.</li><li>Copy the value labelled <strong>Client ID</strong>.</li></ol>
+    <div class="callout"><strong>Client ID is the value the TV needs.</strong><p>It identifies your application and is public. A public device-code app does not need a client secret. Leave “New Secret” alone.</p></div>
+    <label class="field-label" for="clientId">Optional clipboard helper · Client ID only</label>
+    <div class="input-row"><input id="clientId" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Paste your Client ID here"><button id="copyId">Copy client ID</button></div>
+    <div class="status" id="idStatus" aria-live="polite">This field stays in memory only and is cleared when you reload.</div>
+    <p class="hint">This guide does not send the ID to the TV or check it with Twitch. You can also give Codex the public Client ID to help enter it. Keep passwords, tokens, and client secrets out of chat.</p>
+    <div class="checks"><label class="check"><input type="checkbox" data-check="public">The app’s client type is Public.</label><label class="check"><input type="checkbox" data-check="id">I have copied the Client ID.</label></div>
+  </section>
+
+  <section class="step" data-step="3" hidden aria-labelledby="title3">
+    <div class="step-heading"><div><div class="eyebrow">Step 4 of 6</div><h2 id="title3" tabindex="-1">Start sign-in on the TV</h2></div><span class="device">TV remote</span></div>
+    <p>In <strong>Vue TV Preview</strong>, follow this path:</p>
+    <div class="route" aria-label="Menu path"><span>Connections</span><b>/</b><span>Connect Twitch</span><b>/</b><span>Twitch client ID</span></div>
+    <ol class="tasklist"><li>Enter the Client ID from the developer console into the TV field. Check for spaces or missing characters.</li><li>Choose <strong>Get sign-in code</strong>.</li><li>Wait for a code to appear. Keep that dialog open on the TV while you complete the next step.</li></ol>
+    <div class="callout subtle"><strong>There is no code to copy from this guide.</strong><p>The TV asks Twitch for a fresh code. Use only the code currently displayed in the TV dialog. If you leave the preview or cancel, start again.</p></div>
+    <details><summary>Can’t find the preview in Your apps?</summary><p>Open Google TV’s full app list and look for Vue TV Preview. The original Google TV home is still the default. If the app is missing, ask Codex to relaunch or reinstall it. You don’t need to change your default launcher.</p></details>
+    <div class="checks"><label class="check"><input type="checkbox" data-check="code">A fresh Twitch sign-in code is showing on my TV.</label></div>
+  </section>
+
+  <section class="step" data-step="4" hidden aria-labelledby="title4">
+    <div class="step-heading"><div><div class="eyebrow">Step 5 of 6</div><h2 id="title4" tabindex="-1">Authorize on your phone</h2></div><span class="device">Phone / computer</span></div>
+    <ol class="tasklist"><li>Open Twitch’s activation page below. For this <strong>Public</strong> app, use the public-device activation URL.</li><li>Sign in to the account whose followed streamers you want. Enter the code shown on your TV.</li><li>Review the app name and permissions, then choose <strong>Authorize</strong>. The requested scope is <code>user:read:follows</code>.</li><li>Keep the TV dialog open. The preview checks for approval automatically; wait several seconds for “Twitch connected”.</li></ol>
+    <div class="actions"><a class="button primary" href="https://www.twitch.tv/activate?public=true" target="_blank" rel="noopener noreferrer">Open Twitch activation</a><button class="quiet" data-copy="https://www.twitch.tv/activate?public=true">Copy activation link</button></div>
+    <div class="callout"><strong>Use the public activation link.</strong><p>The current TV dialog prints the generic activation address. The link here adds <code>?public=true</code>, as shown in Twitch’s public device-flow documentation. If a valid fresh code is rejected on the generic page, try this link.</p></div>
+    <div class="checks"><label class="check"><input type="checkbox" data-check="authorized">I authorized the app using the correct Twitch account.</label><label class="check"><input type="checkbox" data-check="connected">The TV displayed “Twitch connected”.</label></div>
+  </section>
+
+  <section class="step" data-step="5" hidden aria-labelledby="title5">
+    <div class="step-heading"><div><div class="eyebrow">Step 6 of 6</div><h2 id="title5" tabindex="-1">Check your live-following row</h2></div><span class="device">TV remote</span></div>
+    <ol class="tasklist"><li>Select the <strong>TV icon in the header</strong> to open your live follows, or scroll down Home to <strong>Live from your follows</strong>. In Vue TV 0.5, the profile button at the top left opens Connections; the gear opens the streamer's native quick settings.</li><li>Use <strong>Connections / Refresh content</strong> after sign-in if needed.</li><li>If someone you follow is live, select their card. It attempts to open that channel in the official Twitch TV app; if the link is not handled, it opens Twitch instead.</li></ol>
+    <div class="preview" aria-label="Illustration of the live-following row"><div class="preview-top"><span>VUE TV · LIVE</span><span>Illustration, not live account data</span></div><h3>Live from your follows</h3><div class="stream-demo"><div class="stream-icon" aria-hidden="true">tv</div><div><div class="live">LIVE</div><strong>A followed channel</strong><p>Game or category · Viewer count</p></div></div></div>
+    <p><strong>If nobody is live:</strong> the row says so. That can be a normal result. Compare with Twitch’s Following page using the same account before treating it as a connection problem.</p>
+    <details><summary>What does this first version support?</summary><p>Real followed-live channels with thumbnails, category and viewer count. It refreshes about every two minutes while open. To avoid moving focus, it may defer a refresh while you browse a content row; use Connections / Refresh content. It doesn’t integrate chat or replace Twitch’s player.</p></details>
+    <details><summary>Will I need to sign in again?</summary><p>Yes, when the saved access token expires or is revoked. This preview does not yet renew tokens automatically. Reconnect through Connections / Connect Twitch. Your app registration and Client ID can be reused.</p></details>
+    <details><summary>How do I disconnect?</summary><p>Connections / Disconnect Twitch clears this preview’s saved token. To revoke the app’s access at Twitch too, remove your registered app under Other Connections in <a href="https://www.twitch.tv/settings/connections" target="_blank" rel="noopener noreferrer">Twitch Connections</a>.</p></details>
+    <div class="checks"><label class="check"><input type="checkbox" data-check="verified">I checked the row against my Twitch Following page and tested a channel if one was live.</label></div>
+    <div id="completeMessage" class="completion" hidden><strong>Your setup checklist is complete.</strong><p>You marked every step as done. This page cannot independently verify the TV connection.</p></div>
+  </section>
+
+  <div class="step-footer"><button id="back" class="quiet">Previous step</button><button id="next" class="primary">Next step</button></div>
+  <div id="liveStatus" class="sr-only" aria-live="polite"></div>
+
+  <section class="support" aria-labelledby="helpTitle"><div class="eyebrow">Need a hand?</div><h2 id="helpTitle">Find the next thing to try</h2><label class="field-label" for="symptom">What are you seeing?</label>
+    <select id="symptom"><option value="choose">Choose a symptom</option><option value="registration">Twitch won’t let me register an app</option><option value="code">The TV cannot get a sign-in code</option><option value="invalid">The activation page rejects my code</option><option value="waiting">I authorized it, but the TV is still waiting</option><option value="empty">No followed channels appear</option><option value="expired">It worked before; now there’s a 401 or 403 error</option><option value="playback">The card opens Twitch, but not the channel</option></select>
+    <div id="answer" class="answer" aria-live="polite">Choose the closest symptom for targeted instructions.</div>
+    <details><summary>Optional: relaunch the preview with ADB</summary><p>Only use this if debugging is still enabled and the computer is authorized. Replace TV_IP:ADB_PORT with the connection address shown by your TV; wireless-debugging ports can change. These commands open the app and do not change the default home screen.</p><pre id="adb">adb connect TV_IP:ADB_PORT
+adb -s TV_IP:ADB_PORT shell am start -n je.vu.tvhome/.MainActivity</pre><button class="copy" data-copy-target="adb">Copy commands</button></details>
+  </section>
+  <section class="sources" aria-label="Sources and page controls"><p>Instructions checked against the Vue TV Preview 0.20.0 and Twitch’s documentation on 21 November 2026. Developer-console labels may change.</p><p><a href="https://dev.twitch.tv/docs/authentication/register-app/" target="_blank" rel="noopener noreferrer">App registration</a><a href="https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#device-code-grant-flow" target="_blank" rel="noopener noreferrer">Device-code sign-in</a><a href="https://dev.twitch.tv/docs/api/reference/streams" target="_blank" rel="noopener noreferrer">Followed streams API</a></p><div class="utility"><button id="print" class="quiet">Print all steps</button><button id="reset" class="quiet">Reset checklist</button></div></section>
+</main>
+</div>
+<footer>This HTML file works offline. Links to Twitch need internet access. No libraries, trackers, account requests, or remote assets are loaded by this page.</footer>
+<script>
+'use strict';
+const storageKey='vue-tv-twitch-guide-v1';
+const titles=['Get ready','Register app','Copy client ID','Start on TV','Authorize','Check your row'];
+const stepKeys=[['account'],['registered'],['public','id'],['code'],['authorized','connected'],['verified']];
+let state={step:0,checks:{}};
+let canSave=true;
+try{const saved=JSON.parse(localStorage.getItem(storageKey)||'null');if(saved&&typeof saved==='object'){state.step=Number.isInteger(saved.step)?Math.min(5,Math.max(0,saved.step)):0;state.checks=saved.checks&&typeof saved.checks==='object'?saved.checks:{};}}catch(e){canSave=false;}
+const nav=document.getElementById('stepNav');
+titles.forEach((title,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML='<span class="number" aria-hidden="true">'+(i+1)+'</span><span>'+title+'</span>';b.addEventListener('click',()=>showStep(i,true));nav.appendChild(b);});
+function save(){try{localStorage.setItem(storageKey,JSON.stringify(state));}catch(e){canSave=false;document.getElementById('saveNote').textContent='Browser storage is unavailable. Your progress lasts for this open page only.';}}
+function update(){
+  const done=stepKeys.map(keys=>keys.every(key=>state.checks[key]===true));
+  const count=done.filter(Boolean).length;
+  document.getElementById('progress').value=count;
+  document.getElementById('progressText').textContent=count+' of 6 steps complete';
+  document.getElementById('percentage').textContent=Math.round(count/6*100)+'%';
+  [...nav.children].forEach((b,i)=>{b.classList.toggle('done',done[i]);b.setAttribute('aria-label','Step '+(i+1)+': '+titles[i]+(done[i]?', complete':''));b.querySelector('.number').textContent=done[i]?'✓':String(i+1);if(i===state.step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+  document.getElementById('completeMessage').hidden=count!==6;
+  document.querySelectorAll('[data-check]').forEach(c=>c.checked=state.checks[c.dataset.check]===true);
+}
+function showStep(step,focus=false){
+  state.step=step;document.querySelectorAll('.step').forEach((s,i)=>s.hidden=i!==step);
+  document.getElementById('back').disabled=step===0;
+  document.getElementById('next').disabled=step===5;
+  document.getElementById('next').textContent=step===5?'Last step':'Next step';
+  update();save();
+  if(focus){document.getElementById('title'+step).focus({preventScroll:true});document.querySelector('.step:not([hidden])').scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+}
+document.querySelectorAll('[data-check]').forEach(c=>c.addEventListener('change',()=>{state.checks[c.dataset.check]=c.checked;save();update();}));
+document.getElementById('back').addEventListener('click',()=>showStep(Math.max(0,state.step-1),true));
+document.getElementById('next').addEventListener('click',()=>showStep(Math.min(5,state.step+1),true));
+async function copy(value,button){
+  const original=button.textContent;
+  try{
+    if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(value);
+    else {const t=document.createElement('textarea');t.value=value;t.setAttribute('readonly','');t.style.position='fixed';t.style.top='-1000px';document.body.appendChild(t);t.select();const copied=document.execCommand('copy');t.remove();if(!copied)throw new Error('clipboard unavailable');button.focus();}
+    button.textContent='Copied';document.getElementById('liveStatus').textContent='Copied to clipboard.';
+  }catch(e){button.textContent='Select and copy manually';document.getElementById('liveStatus').textContent='Clipboard unavailable. Select the text and copy it manually.';}
+  setTimeout(()=>button.textContent=original,2200);
+}
+document.querySelectorAll('[data-copy],[data-copy-target]').forEach(b=>b.addEventListener('click',()=>copy(b.dataset.copy||document.getElementById(b.dataset.copyTarget).textContent,b)));
+const id=document.getElementById('clientId');
+id.addEventListener('input',()=>{const v=id.value.trim();document.getElementById('idStatus').textContent=!v?'This field stays in memory only and is cleared when you reload.':/^[a-z0-9]{20,64}$/i.test(v)?'Looks like a client ID format. Only Twitch can confirm it is valid.':'Check this is the Client ID exactly as shown in the console. No spaces, URL, or secret.';});
+document.getElementById('copyId').addEventListener('click',e=>{if(!id.value.trim()){id.focus();document.getElementById('idStatus').textContent='Paste your public Client ID first.';return;}copy(id.value.trim(),e.currentTarget);});
+const answers={
+  choose:'Choose the closest symptom for targeted instructions.',
+  registration:'Verify your email and enable 2FA, then refresh the developer console. Use a unique app name. Complete the CAPTCHA if shown. If the form requires a redirect URL, add http://localhost:3000 and select Add before Create.',
+  code:'In the developer console, confirm Client Type is Public. Recopy the Client ID, with no spaces. Check the TV has internet access, then open Connections / Connect Twitch and try again. Note the exact error if it still fails.',
+  invalid:'Use https://www.twitch.tv/activate?public=true for this public app. Cancel the old TV dialog and request a fresh code. Enter the new code while keeping that dialog open. An expired or already used code cannot be reused.',
+  waiting:'Confirm you authorized the same registered app. Keep the TV dialog in the foreground and wait several seconds. If you switched apps or the code expired, restart Connect Twitch and authorize a fresh code. If it still waits, tell Codex the exact TV message; don’t send a password or token.',
+  empty:'Compare Twitch’s Following page using the same signed-in account. If nobody is live, the empty row is expected. Otherwise, open Connections / Refresh content while not browsing a stream card. Confirm you authorized read access to follows. Reconnect if the TV shows an error.',
+  expired:'Reconnect Twitch in the preview. A 401 can indicate an expired or revoked token; this version has no automatic token renewal. A 403 can indicate missing permission. Confirm the app requests user:read:follows and approve it when reconnecting.',
+  playback:'The preview attempts a channel link in the official Twitch TV app, then falls back to opening Twitch. Check that app is installed and signed in. If only the app opens, channel deep-link handling still needs testing for the installed Twitch version. You can watch via Following inside Twitch in the meantime.'
+};
+document.getElementById('symptom').addEventListener('change',e=>document.getElementById('answer').textContent=answers[e.target.value]);
+document.getElementById('print').addEventListener('click',()=>window.print());
+document.getElementById('reset').addEventListener('click',()=>{if(!window.confirm('Clear this guide’s checklist progress? This does not disconnect Twitch on your TV.'))return;state={step:0,checks:{}};id.value='';document.getElementById('idStatus').textContent='This field stays in memory only and is cleared when you reload.';document.getElementById('symptom').value='choose';document.getElementById('answer').textContent=answers.choose;showStep(0,true);});
+showStep(state.step);
+if(!canSave)document.getElementById('saveNote').textContent='Browser storage is unavailable. Your progress lasts for this open page only.';
+</script>
+</body>
+</html>

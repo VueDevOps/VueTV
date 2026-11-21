@@ -1,0 +1,31 @@
+{
+  "source": "Real Vue TV app screenshots captured on the user\u2019s Google TV Streamer",
+  "captures": {
+    "home": "vue-web-home.png",
+    "picks": "vue-top-pick-final-v14.png",
+    "goodfellas": "vue-web-goodfellas.png",
+    "western": "vue-web-western.png",
+    "apps": "vue-apps-final.png",
+    "app-glow": "vue-app-glow-v15.png",
+    "live": "vue-header-v18.png",
+    "follows": "vue-twitch-name-v08.png",
+    "requests": "vue-requests-final-v11.png",
+    "request-details": "vue-rich-detail-final-v12.png",
+    "profiles": "vue-avatar-picker-v17.png",
+    "profile-editor": "vue-avatar-editor-v17.png",
+    "profile-custom": "vue-avatar-persisted-v17.png",
+    "glow": "vue-glow-v15.png"
+  },
+  "navigation": "Fresh Android screenrecord at 1920?1080, 40 Mbps capture setting; H.264 CRF 17 web encode at native 1080p, 30 fps output; no upscaling.",
+  "generated_artwork_used": false,
+  "videos": {
+    "cinematic-hq.mp4": {
+      "master": "tools/vue-cinematic-hq-master.mp4",
+      "content": "Top picks artwork and focus transitions"
+    },
+    "navigation-hq.mp4": {
+      "master": "tools/vue-navigation-hq-master.mp4",
+      "content": "Apps and Continue watching row navigation"
+    }
+  }
+}

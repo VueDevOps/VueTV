@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.20.1 ? 2026-11-21
+## 0.20.1 - 2026-11-21
 
 - Open selected live channels in S0undTV instead of the official Twitch TV app.
 - Retain Twitch broadcaster IDs and use channel links supported by the installed S0undTV beta on cold and repeat launches.

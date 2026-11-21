@@ -22,7 +22,7 @@ Alternatively, install Android SDK Platform Tools on your computer and use ADB:
 adb pair TV_IP:PAIRING_PORT
 # The connection port may differ from the pairing port:
 adb connect TV_IP:ADB_PORT
-adb -s TV_IP:ADB_PORT install -r VueTV-0.20.2.apk
+adb -s TV_IP:ADB_PORT install -r VueTV-0.20.3.apk
 adb -s TV_IP:ADB_PORT shell am start -n je.vu.tvhome/.MainActivity
 ```
 
@@ -43,7 +43,7 @@ The password is used for sign-in and is not saved. The token remains in private 
 2. Choose the **Public** client type. If the form requires a redirect URL, add `http://localhost:3000`; device-code sign-in does not use it or require a local server. Keep the Client ID. Do not create or enter a client secret.
 3. Open **avatar / VueSettings / Connect Twitch** on the TV, enter the Client ID and request a sign-in code.
 4. Open [Twitch activation](https://www.twitch.tv/activate?public=true) on your phone, sign into the desired account and enter the code. Keep the TV dialog open while authorization completes.
-5. Open **Live** to see followed channels that are live. Selecting a channel opens that stream in **S0undTV**, which must be installed separately. Vue TV passes the selected channel directly to S0undTV, including when the player is already open.
+5. Open **Live** to see followed channels that are live. Focused stream cards show their full thumbnail as the Live background. Selecting a channel opens that stream in **S0undTV**, which must be installed separately. Vue TV passes the selected channel directly to S0undTV, including when the player is already open.
 
 Vue TV requests `user:read:follows`. See [Twitch device-flow refresh rules](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#device-code-grant-flow). Vue TV automatically renews expired access tokens and saves each replacement refresh token. **After upgrading from 0.20.1 or earlier, reconnect Twitch once** because those versions did not save a refresh token. Normal use can keep the session going beyond 30 days, but Twitch can require sign-in again after 30 days without a refresh or when authorization is revoked. This is not a guaranteed permanent or fixed 30-day sign-in. **Disconnect Twitch** clears both local tokens. Revoke access at the provider through [Twitch Connections](https://www.twitch.tv/settings/connections) if needed.
 

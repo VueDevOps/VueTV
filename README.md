@@ -19,7 +19,7 @@ Vue TV has no advertising feed or analytics SDK. Playback opens installed apps. 
 
 ## Install and connect
 
-1. Download `VueTV-0.20.2.apk` from [Releases](https://github.com/VueDevOps/VueTV/releases/latest) and sideload it onto your Android TV / Google TV device.
+1. Download `VueTV-0.20.3.apk` from [Releases](https://github.com/VueDevOps/VueTV/releases/latest) and sideload it onto your Android TV / Google TV device.
 2. Open **Vue TV Preview**, select the avatar, then **VueSettings**.
 3. Connect your Emby server, for example `https://emby.example.com`. Connect Twitch with your own public Twitch application's Client ID if wanted.
 4. Open **Requests / Sign in** to enter your Jellyseerr URL, for example `https://jellyseerr.example.com`, and Emby credentials.

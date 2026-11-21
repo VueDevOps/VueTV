@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.20.3 - 2026-11-22
+
+- Show the focused stream thumbnail as full-screen artwork on Live, instead of an artwork-derived color wash.
+- Keep shading for readable text and restore the focused stream artwork after returning from playback.
+- Include the automatic Twitch sign-in renewal introduced in 0.20.2.
+
+Checked on Google TV Streamer / Android 14: full artwork followed focus between Ludwig and Xaryu, the selected channel opened in S0undTV, and its artwork/focus returned when switching back to Vue TV. Build and lint passed.
+
+
 ## 0.20.2 - 2026-11-22
 
 - Keep Twitch sign-in active by renewing expired access tokens automatically with public-client device-flow refresh tokens.

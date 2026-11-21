@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
     TextView moveHint;
     boolean rearrangingAppViews;
     Requests requests;
+    TwitchSession twitchSession;
     android.content.SharedPreferences prefs;
     ProfileStore profiles;
     ProfilePicker profilePicker;
@@ -109,6 +110,7 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         profiles=new ProfileStore(this);profileId=profiles.active().id;prefs=profiles.preferences(profileId);profilePicker=new ProfilePicker(this);
         requests=new Requests(this);
+        twitchSession=createTwitchSession();
         imageDisk=new TimedDiskCache(new File(getCacheDir(),profiles.cacheFolder("artwork",profileId)),128*1024*1024L);
         feedDisk=new TimedDiskCache(new File(getCacheDir(),profiles.cacheFolder("feeds",profileId)),4*1024*1024L);
         imageTtl=prefs.getLong("artworkTtl",DAY);
@@ -569,8 +571,8 @@ public class MainActivity extends Activity {
         boolean bypass=force||bypassFeedCache.get();
         if(!bypass){byte[] saved=feedDisk.get(key,ttl);if(saved!=null){android.util.Log.d("VueCache","feed disk hit");return new String(saved,StandardCharsets.UTF_8);}}
         // Home can draw the last snapshot immediately while expired lists refresh.
-        boolean emby=url.startsWith(server()+"/emby/");boolean streams=url.startsWith("https://api.twitch.tv/helix/streams/followed?");
-        if(!bypass&&(emby||streams)){
+        boolean emby=url.startsWith(server()+"/emby/");
+        if(!bypass&&emby){
             byte[] stale=feedDisk.get(key,emby?DAY:5*MINUTE);
             if(stale!=null){
                 if(refreshingFeeds.add(key))io.execute(()->{try{
@@ -607,7 +609,7 @@ public class MainActivity extends Activity {
                 picks=embyItems("/Users/"+user+"/Items?Recursive=true&IncludeItemTypes=Movie,Series&IsPlayed=false&SortBy=CommunityRating&SortOrder=Descending&Limit=120&Fields=Overview,Genres,ProviderIds",true);
                 embyError="Nothing here yet. Watch something in Emby and refresh.";
             }catch(Exception e){embyError="Emby: "+e.getMessage()+". Open Connections to sign in again.";}
-            if(hasTwitch())try {streams=twitchStreams();twitchError="Nobody you follow is live right now. Refreshes every minute.";}catch(Exception e){twitchError="Twitch: "+e.getMessage()+". Open Connections to reconnect.";}
+            if(hasTwitch())try {streams=twitchStreams();twitchError="Nobody you follow is live right now. Refreshes every minute.";}catch(Exception e){twitchError=e instanceof TwitchSession.ReconnectRequired?e.getMessage():"Twitch is temporarily unavailable. Retrying automatically; check your connection.";}
             if(!live){
                 List<Media> discoveries=new ArrayList<>();
                 if(requests.connected())try{discoveries=requests.homeDiscoveries();}catch(Exception ignored){}
@@ -692,11 +694,40 @@ public class MainActivity extends Activity {
         int rt=media.meta.indexOf("RT critics"),end=rt<0?-1:media.meta.indexOf('%',rt);if(end>rt)line.setSpan(new android.text.style.ForegroundColorSpan(color("#B7DCC2")),rt,end+1,0);return line;
     }
     void updateTopPickMetadata(Media media){if(!isDestroyed()&&featured==media&&presentation==2){heroMeta.setText(styledHeroMetadata(media));heroDescription.setText(media.overview.isEmpty()?media.detail:media.overview);}}
+    TwitchSession.Credentials readTwitchCredentials(){
+        synchronized(prefs){return new TwitchSession.Credentials(prefs.getString("twitchClient",""),prefs.getString("twitchToken",""),prefs.getString("twitchRefreshToken",""),prefs.getLong("twitchSessionRevision",0));}
+    }
+    boolean saveTwitchCredentials(TwitchSession.Credentials expected,TwitchSession.Credentials next){
+        synchronized(prefs){
+            if(!profiles.exists(profileId)||!expected.equals(readTwitchCredentials()))return false;
+            return prefs.edit().putString("twitchClient",next.client()).putString("twitchToken",next.access()).putString("twitchRefreshToken",next.refresh()).putLong("twitchSessionRevision",next.revision()).commit();
+        }
+    }
+    void clearTwitchSession(String client){
+        synchronized(prefs){android.content.SharedPreferences.Editor edit=prefs.edit().remove("twitchToken").remove("twitchRefreshToken").putLong("twitchSessionRevision",prefs.getLong("twitchSessionRevision",0)+1);if(client!=null)edit.putString("twitchClient",client);edit.commit();}
+    }
+    TwitchSession createTwitchSession(){
+        return new TwitchSession(profileId,new TwitchSession.Store(){
+            public TwitchSession.Credentials read(){return readTwitchCredentials();}
+            public boolean save(TwitchSession.Credentials expected,TwitchSession.Credentials next){return saveTwitchCredentials(expected,next);}
+        },new TwitchSession.Network(){
+            public TwitchSession.Validation validate(String access)throws Exception{
+                JSONObject value=new JSONObject(request("https://id.twitch.tv/oauth2/validate","GET",null,Map.of("Authorization","OAuth "+access)));
+                JSONArray scopes=value.optJSONArray("scopes");boolean follows=false;if(scopes!=null)for(int i=0;i<scopes.length();i++)if(scopes.optString(i).equals("user:read:follows"))follows=true;
+                return new TwitchSession.Validation(value.optString("user_id"),value.optString("client_id"),follows,value.optLong("expires_in",0));
+            }
+            public TwitchSession.TokenPair refresh(String client,String refresh)throws Exception{
+                String body="client_id="+Uri.encode(client)+"&grant_type=refresh_token&refresh_token="+Uri.encode(refresh);
+                JSONObject value=new JSONObject(request("https://id.twitch.tv/oauth2/token","POST",body,Map.of("Content-Type","application/x-www-form-urlencoded")));
+                return new TwitchSession.TokenPair(value.getString("access_token"),value.getString("refresh_token"));
+            }
+            public String followed(String access,String client,String user)throws Exception{
+                return cachedGet("https://api.twitch.tv/helix/streams/followed?first=50&user_id="+Uri.encode(user),Map.of("Authorization","Bearer "+access,"Client-Id",client),MINUTE);
+            }
+        },SystemClock::elapsedRealtime);
+    }
     List<Media> twitchStreams()throws Exception {
-        String token=prefs.getString("twitchToken",""),client=prefs.getString("twitchClient","");
-        JSONObject validation=new JSONObject(cachedGet("https://id.twitch.tv/oauth2/validate",Map.of("Authorization","OAuth "+token),60*MINUTE));
-        String user=validation.getString("user_id");
-        JSONObject data=new JSONObject(cachedGet("https://api.twitch.tv/helix/streams/followed?first=50&user_id="+Uri.encode(user),Map.of("Authorization","Bearer "+token,"Client-Id",client),MINUTE));
+        JSONObject data=new JSONObject(twitchSession.followed());
         List<Media> result=new ArrayList<>();JSONArray items=data.getJSONArray("data");
         for(int i=0;i<items.length();i++){JSONObject s=items.getJSONObject(i); Media channel=new Media(s.getString("user_name"),"LIVE · "+s.optString("game_name")+" · "+s.optInt("viewer_count")+" watching",s.optString("thumbnail_url").replace("{width}","640").replace("{height}","360"),"Twitch",s.getString("user_login"));channel.broadcasterId=s.getString("user_id");result.add(channel);}return result;
     }
@@ -715,7 +746,7 @@ public class MainActivity extends Activity {
         new AlertDialog.Builder(this).setTitle("Your connections").setItems(options,(d,n)->{
             if(n==0)embyLogin();if(n==1)twitchSetup();if(n==2){forceFeedRefresh=true;renderedFeed="";loadFeeds();toast("Refreshing…");}
             if(n==3){prefs.edit().remove("embyToken").remove("embyUser").apply();images.evictAll();imageTimes.clear();draw();loadFeeds();}
-            if(n==4){prefs.edit().remove("twitchToken").apply();images.evictAll();imageTimes.clear();draw();loadFeeds();}
+            if(n==4){cancelPairing();clearTwitchSession(null);images.evictAll();imageTimes.clear();draw();loadFeeds();}
             if(n==5){try{startActivity(new Intent().setComponent(new ComponentName("com.google.android.apps.tv.launcherx","com.google.android.apps.tv.launcherx.home.HomeActivity")));}catch(Exception e){toast("Google TV unavailable");}}
             if(n==6)cacheSettings();
         }).setNegativeButton("Close",null).show();
@@ -751,11 +782,11 @@ public class MainActivity extends Activity {
     }
     void twitchSetup() {
         LinearLayout form=new LinearLayout(this);form.setOrientation(LinearLayout.VERTICAL);form.setPadding(dp(24),dp(8),dp(24),dp(8));
-        form.addView(text("Use the client ID of a public Twitch developer application registered for this launcher. You will authorize read access to your followed channels on your phone.",15,"#D0DBD6"));
+        form.addView(text("Use the client ID of a public Twitch developer application registered for this launcher. You will authorize read access to your followed channels on your phone. Sign-in renews automatically while used regularly; older sign-ins need one reconnect to enable this.",15,"#D0DBD6"));
         EditText client=field(form,"Twitch client ID",prefs.getString("twitchClient",""),InputType.TYPE_CLASS_TEXT);
         new AlertDialog.Builder(this).setTitle("Connect Twitch").setView(form).setPositiveButton("Get sign-in code",(d,n)->{
             String id=client.getText().toString().trim();if(id.isEmpty()){toast("A registered Twitch client ID is required");return;}
-            prefs.edit().putString("twitchClient",id).apply();startPairing(id);
+            if(!id.equals(prefs.getString("twitchClient","")))clearTwitchSession(id);startPairing(id);
         }).setNegativeButton("Cancel",null).show();
     }
     void startPairing(String client) {
@@ -773,11 +804,16 @@ public class MainActivity extends Activity {
     void pollPairing() {
         if(deviceCode.isEmpty()||!active)return;
         if(System.currentTimeMillis()>deviceExpiry){cancelPairing();toast("Code expired. Connect Twitch again.");return;}
-        final String code=deviceCode;
+        final String code=deviceCode;final String client=prefs.getString("twitchClient","");
         io.execute(()->{try {
-            String body="client_id="+Uri.encode(prefs.getString("twitchClient",""))+"&device_code="+Uri.encode(code)+"&grant_type=urn:ietf:params:oauth:grant-type:device_code";
+            String body="client_id="+Uri.encode(client)+"&device_code="+Uri.encode(code)+"&scopes=user%3Aread%3Afollows&grant_type=urn:ietf:params:oauth:grant-type:device_code";
             JSONObject r=new JSONObject(request("https://id.twitch.tv/oauth2/token","POST",body,Map.of("Content-Type","application/x-www-form-urlencoded")));
-            main.post(()->{if(!code.equals(deviceCode))return;prefs.edit().putString("twitchToken",r.optString("access_token")).apply();cancelPairing();loadFeeds();toast("Twitch connected");});
+            TwitchSession.TokenPair pair=new TwitchSession.TokenPair(r.getString("access_token"),r.getString("refresh_token"));
+            if(pair.access().isEmpty()||pair.refresh().isEmpty())throw new IOException("Incomplete sign-in response");
+            main.post(()->{if(!code.equals(deviceCode)||!active||isDestroyed())return;
+                TwitchSession.Credentials current=readTwitchCredentials();
+                if(!current.client().equals(client)||!saveTwitchCredentials(current,new TwitchSession.Credentials(client,pair.access(),pair.refresh(),current.revision()+1))){cancelPairing();return;}
+                cancelPairing();forceFeedRefresh=true;loadFeeds();toast("Twitch connected - automatic renewal enabled");});
         }catch(Exception e){main.post(()->{if(!code.equals(deviceCode))return;String message=e.getMessage();if(message.contains("authorization_pending"))main.postDelayed(this::pollPairing,pollInterval*1000L);else if(message.contains("slow_down")){pollInterval+=5;main.postDelayed(this::pollPairing,pollInterval*1000L);}else{cancelPairing();toast("Twitch sign-in failed. Try connecting again.");}});}});
     }
     HttpURLConnection connection(String url)throws Exception {
@@ -796,7 +832,7 @@ public class MainActivity extends Activity {
                 String reason="HTTP "+status;
                 if(url.startsWith("https://id.twitch.tv/")&&value.contains("authorization_pending"))reason="authorization_pending";
                 if(url.startsWith("https://id.twitch.tv/")&&value.contains("slow_down"))reason="slow_down";
-                throw new IOException(reason);
+                throw new TwitchSession.HttpFailure(status,reason);
             }return value;
         }finally{c.disconnect();}
     }

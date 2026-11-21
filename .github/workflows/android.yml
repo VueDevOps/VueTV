@@ -27,8 +27,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p build/checks
-          javac -d build/checks app/src/main/java/je/vu/tvhome/{TimedDiskCache,MotionSpring,AppOrder,ArtworkColors,AvatarStyle,PickRotation}.java tests/*.java
-          for check in CacheCheck MotionCheck HomeFeaturesCheck AvatarCheck PickRotationCheck; do
+          javac -d build/checks app/src/main/java/je/vu/tvhome/{TimedDiskCache,MotionSpring,AppOrder,ArtworkColors,AvatarStyle,PickRotation,TwitchSession}.java tests/*.java
+          for check in CacheCheck MotionCheck HomeFeaturesCheck AvatarCheck PickRotationCheck TwitchSessionCheck; do
             java -cp build/checks je.vu.tvhome.$check
           done
       - uses: actions/upload-artifact@v4

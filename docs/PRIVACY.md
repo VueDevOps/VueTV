@@ -5,7 +5,7 @@ Vue TV connects directly to the Emby, Jellyseerr and Twitch services you configu
 There is no Vue TV analytics SDK, advertising feed or hosted Vue TV account service.
 
 - Emby and Jellyseerr passwords are used for authentication and are not saved.
-- Access tokens, Jellyseerr sessions, server URLs and account identifiers remain in the selected profile's Android private preferences. This is Android app storage, not a separately encrypted credential vault.
+- Access tokens, Twitch refresh tokens, Jellyseerr sessions, server URLs and account identifiers remain in the selected profile's Android private preferences. This is Android app storage, not a separately encrypted credential vault.
 - Artwork/feed snapshots are cached in private app cache directories, scoped by profile/account. Android may reclaim caches.
 - Profile names, avatar choices, app order and cache preferences remain on the device. Android backup and device transfer are disabled.
 - The optional Home-button service filters Home keys and observes original-launcher window events. It does not retrieve window contents.

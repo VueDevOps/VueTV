@@ -22,7 +22,7 @@ Alternatively, install Android SDK Platform Tools on your computer and use ADB:
 adb pair TV_IP:PAIRING_PORT
 # The connection port may differ from the pairing port:
 adb connect TV_IP:ADB_PORT
-adb -s TV_IP:ADB_PORT install -r VueTV-0.20.1.apk
+adb -s TV_IP:ADB_PORT install -r VueTV-0.20.2.apk
 adb -s TV_IP:ADB_PORT shell am start -n je.vu.tvhome/.MainActivity
 ```
 
@@ -45,7 +45,7 @@ The password is used for sign-in and is not saved. The token remains in private 
 4. Open [Twitch activation](https://www.twitch.tv/activate?public=true) on your phone, sign into the desired account and enter the code. Keep the TV dialog open while authorization completes.
 5. Open **Live** to see followed channels that are live. Selecting a channel opens that stream in **S0undTV**, which must be installed separately. Vue TV passes the selected channel directly to S0undTV, including when the player is already open.
 
-Vue TV requests `user:read:follows`. Expired or revoked tokens require reconnecting; this preview does not automatically renew them. **Disconnect Twitch** clears the local token. Revoke access at the provider through [Twitch Connections](https://www.twitch.tv/settings/connections) if needed.
+Vue TV requests `user:read:follows`. See [Twitch device-flow refresh rules](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#device-code-grant-flow). Vue TV automatically renews expired access tokens and saves each replacement refresh token. **After upgrading from 0.20.1 or earlier, reconnect Twitch once** because those versions did not save a refresh token. Normal use can keep the session going beyond 30 days, but Twitch can require sign-in again after 30 days without a refresh or when authorization is revoked. This is not a guaranteed permanent or fixed 30-day sign-in. **Disconnect Twitch** clears both local tokens. Revoke access at the provider through [Twitch Connections](https://www.twitch.tv/settings/connections) if needed.
 
 The showcase includes an [interactive Twitch checklist](https://vuedevops.github.io/VueTV/twitch-setup.html).
 
@@ -100,7 +100,7 @@ To remove Vue TV, restore the original Home app first, then uninstall through An
 - **Server connection fails:** check DNS/network access, HTTPS and a trusted certificate. Do not include `/api/v1` in the Jellyseerr URL. VPNs, proxy rules or additional proxy login screens can block API calls.
 - **Emby login fails:** check credentials and that the proxy exposes `/emby` API endpoints. If browsing works but playback fails, check the playback client is installed and signed in.
 - **Requests returns 401/403:** reconnect for 401; check server permissions and quotas for 403. The server must support Emby login.
-- **Live is empty:** no followed channels may be live. Reconnect if authorization expired and check the application's Client ID matches the authorization.
+- **Live is empty:** no followed channels may be live. Allow automatic retries after a temporary network outage. Reconnect once after upgrading an older sign-in, after prolonged inactivity, or if Twitch has revoked authorization. Check the application's Client ID matches the authorization.
 - **Home still opens Google TV:** check the Home-app setting and accessibility service. Some firmware does not support reliable overrides.
 - **Settings/playback behaves differently:** these depend on installed apps and firmware APIs. Confirm the relevant app is installed and current.
 

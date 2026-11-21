@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.20.2 - 2026-11-22
+
+- Keep Twitch sign-in active by renewing expired access tokens automatically with public-client device-flow refresh tokens.
+- Save both tokens in profile-private preferences and persist every rotated replacement. Serialize renewals across activity recreations to avoid reusing a single-use refresh token.
+- Validate on startup and at least hourly; retry authorization failures once. Temporary network failures keep the saved sign-in for automatic retry.
+- Clear both tokens on disconnect/client changes and prevent in-flight refreshes from restoring a deleted or disconnected profile.
+- Older sign-ins require one reconnect to obtain the refresh token discarded by previous versions. Twitch may still require authorization after 30 days without a refresh or after revocation.
+
+Validation: mocked renewal tests cover 35 days of regular use, restart, expiry/retry, revocation, offline recovery, scope/client mismatch, token rotation and concurrent/disconnect/deletion races. On Google TV Streamer / Android 14, completed device-code authorization, replaced only the development access token with a test-invalid value, verified automatic renewal against Twitch and rotation of both tokens, then verified persistence across a full app restart. A real 30-day session has not been time-tested.
+
 ## 0.20.1 - 2026-11-21
 
 - Open selected live channels in S0undTV instead of the official Twitch TV app.

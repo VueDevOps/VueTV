@@ -8,7 +8,7 @@ Use JDK 17 or 21, Android SDK platform 35 and the checked-in Gradle 8.11.1 wrapp
 ./gradlew :app:assembleDebug :app:lintDebug
 ```
 
-On Windows, use `./gradlew.bat`. CI runs the same tasks plus the pure-Java checks and showcase JavaScript syntax check. Lint warnings are retained in the report; errors fail the build.
+On Windows, use `./gradlew.bat`. CI runs the same tasks plus the six pure-Java checks and showcase JavaScript syntax check. Lint warnings are retained in the report; errors fail the build.
 
 ## JVM checks
 
@@ -16,12 +16,13 @@ These checks run without an emulator. From the repository root, using JDK 17+:
 
 ```sh
 mkdir -p build/checks
-javac -d build/checks app/src/main/java/je/vu/tvhome/TimedDiskCache.java app/src/main/java/je/vu/tvhome/MotionSpring.java app/src/main/java/je/vu/tvhome/AppOrder.java app/src/main/java/je/vu/tvhome/ArtworkColors.java app/src/main/java/je/vu/tvhome/AvatarStyle.java app/src/main/java/je/vu/tvhome/PickRotation.java tests/*.java
+javac -d build/checks app/src/main/java/je/vu/tvhome/TimedDiskCache.java app/src/main/java/je/vu/tvhome/MotionSpring.java app/src/main/java/je/vu/tvhome/AppOrder.java app/src/main/java/je/vu/tvhome/ArtworkColors.java app/src/main/java/je/vu/tvhome/AvatarStyle.java app/src/main/java/je/vu/tvhome/PickRotation.java app/src/main/java/je/vu/tvhome/TwitchSession.java tests/*.java
 java -cp build/checks je.vu.tvhome.CacheCheck
 java -cp build/checks je.vu.tvhome.MotionCheck
 java -cp build/checks je.vu.tvhome.HomeFeaturesCheck
 java -cp build/checks je.vu.tvhome.AvatarCheck
 java -cp build/checks je.vu.tvhome.PickRotationCheck
+java -cp build/checks je.vu.tvhome.TwitchSessionCheck
 ```
 
 ## Signed releases

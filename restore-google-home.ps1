@@ -11,4 +11,3 @@ if ($remainingServices.Count -gt 0) {
 }
 adb -s $Device shell cmd package set-home-activity --user 0 com.google.android.apps.tv.launcherx/.home.HomeActivity
 adb -s $Device shell am start -a android.intent.action.MAIN -c android.intent.category.HOME
-

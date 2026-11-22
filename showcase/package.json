@@ -1,1 +1,1 @@
-{"name":"vue-tv-showcase","private":true,"type":"module","scripts":{"dev":"python -m http.server 4173 --bind 127.0.0.1 --directory dist","check":"node --check dist/app.js"}}
+{"name":"vue-tv-showcase","private":true,"type":"module","scripts":{"dev":"python -m http.server 4173 --bind 127.0.0.1 --directory dist","check":"node --check dist/app.js && node --check dist/demo.js && node --check dist/demo-avatar.js && node ../tests/ShowcaseDemoCheck.cjs && node ../tests/ShowcasePageCheck.cjs"},"devDependencies":{"jsdom":"^29.1.1"}}

@@ -1,9 +1,9 @@
 const tour = [
   { key: 'home', label: 'Home', kicker: 'FAMILIAR, FROM THE FIRST CLICK', title: 'Everything you actually watch. Together.', description: 'Your Emby library, live follows and favourite apps share one familiar home. Click the menu in this real capture to explore another view.', views: [{file:'home',label:'Home',alt:'Vue TV Home screen with Home, Apps, Live and Requests navigation'}] },
-  { key: 'picks', label: 'Top picks', kicker: 'THE BIG-SCREEN TREATMENT', title: 'Give your next watch the spotlight.', description: 'Full artwork, a proper synopsis, ratings and the details that matter. Move between these real captures and the whole screen follows.', views: [{file:'picks',label:'The Dark Knight',alt:'Vue TV Top picks showing The Dark Knight with its full-screen backdrop and ratings'},{file:'goodfellas',label:'GoodFellas',alt:'The selected GoodFellas recommendation in Vue TV'},{file:'western',label:'The Good, the Bad and the Ugly',alt:'The selected western recommendation in Vue TV'}] },
+  { key: 'picks', label: 'Top picks', kicker: 'THE BIG-SCREEN TREATMENT', title: 'Give your next watch the spotlight.', description: 'Full artwork, a proper synopsis, ratings and the details that matter. Move between these real captures and the whole screen follows.', views: [{file:'picks',label:'Featured pick',alt:'Current Vue TV featured pick with full-screen artwork'},{file:'goodfellas',label:'Focused library pick',alt:'A focused library recommendation with synopsis and ratings in Vue TV 0.20.9'},{file:'western',label:'Another library pick',alt:'Another current library title selected using the remote'}] },
   { key: 'apps', label: 'Your apps', kicker: 'MAKE ROOM FOR YOUR FAVOURITES', title: 'Your apps. In your order.', description: 'Open the apps you already use. Hold an app to move it, arrange your favourites, and keep that order saved for your profile.', views: [{file:'apps',label:'Apps',alt:'The actual Vue TV Apps screen showing installed streaming apps'},{file:'app-glow',label:'Focus glow',alt:'A focused app icon in Vue TV with its circular glow'}] },
   { key: 'live', label: 'Live follows', kicker: 'YOUR PEOPLE, WHEN THEY’RE LIVE', title: 'Catch them while they’re on.', description: 'Live from your follows brings in the Twitch channels you follow, with real thumbnails and streamer name tags. The list refreshes every minute. Select a channel to watch it directly in S0undTV. Twitch sign-in now renews automatically. On Live, artwork appears first, then a muted live preview starts after focus settles. Artwork stays if playback is unavailable; previews can be turned off in VueSettings.', views: [{file:'live',label:'Live',alt:'Vue TV Live tab showing a currently live followed Twitch channel'},{file:'follows',label:'Name tags',alt:'The Live from your follows row with live badges and streamer names'}] },
-  { key: 'requests', label: 'Requests', kicker: 'YOUR NEXT GREAT WATCH', title: 'Explore first. Request when you’re ready.', description: 'Browse and search through Jellyseerr. Open a title for its story, cast, available scores and trailer. Requests and season choices are confirmed before sending.', views: [{file:'requests',label:'Discover',alt:'Vue TV Requests with Trending now and Popular movies'},{file:'request-details',label:'Title details',alt:'Vue TV movie request details showing artwork, Rotten Tomatoes scores, synopsis, cast and a Watch trailer button'}] },
+  { key: 'requests', label: 'Requests', kicker: 'YOUR NEXT GREAT WATCH', title: 'Explore first. Request when you’re ready.', description: 'Browse and search through Jellyseerr. Open a title for its story, cast, available scores and trailer. Requests and season choices are confirmed before sending. Available titles link directly to Emby, with one clear focus highlight in a single action row.', views: [{file:'requests',label:'Discover',alt:'Vue TV Requests with Trending now and Popular movies'},{file:'request-details',label:'Title details',alt:'Vue TV movie request details showing artwork, Rotten Tomatoes scores, synopsis, cast and a Watch trailer button'}] },
   { key: 'profiles', label: 'Profiles', kicker: 'A LITTLE MORE YOU', title: 'A home for everyone on the sofa.', description: 'Switch users, connect your own services and style your username-generated avatar. Hold a user or choose Edit profile to make it yours.', views: [{file:'profiles',label:'User picker',alt:'Vue TV user picker with Create user, Edit profile and VueSettings'},{file:'profile-editor',label:'Edit profile',alt:'Vue TV avatar editor with a live preview and style choices'},{file:'profile-custom',label:'Another look',alt:'A different avatar preview created inside the real Vue TV profile editor'}] }
 ];
 let selectedKey = 'picks';
@@ -48,9 +48,9 @@ function renderHotspots(section, view) {
     if (section.key === 'requests') add('Explore Apps',24,6.5,6.5,7,'apps');
   }
   if (section.key === 'picks') {
-    add('Select The Dark Knight',24,66,16,17,'picks',0);
-    add('Select GoodFellas',42,66,16,17,'picks',1);
-    add('Select The Good, the Bad and the Ugly',60,66,16,17,'picks',2);
+    add('Select the featured pick',24,66,16,17,'picks',0);
+    add('Select a focused library pick',42,66,16,17,'picks',1);
+    add('Select another library pick',60,66,16,17,'picks',2);
   }
   if (section.key === 'requests' && view === 0) add('See title details',6,44,16,17,'requests',1);
   if (section.key === 'profiles' && view === 0) add('Open Edit profile',25,68,12,9,'profiles',1);
@@ -152,15 +152,29 @@ function openCapture(key, index = 0) {
 
 $$('[data-open-capture]').forEach(button => button.addEventListener('click', () => openCapture(button.dataset.openCapture)));
 $('#open-gallery').addEventListener('click', () => openCapture('home'));
-$$('[data-video]').forEach(button => button.addEventListener('click', () => {
-  const cinematic = button.dataset.video === 'cinematic';
-  openDialog(cinematic ? 'Cinematic picks ? 1080p' : 'Vue TV navigation ? 1080p');
-  const video = document.createElement('video'); video.className = 'dialog-video'; video.controls = true; video.autoplay = true; video.playsInline = true; video.muted = true; video.loop = true; video.poster = source('picks');
-  const clip = document.createElement('source'); clip.src = cinematic ? 'assets/cinematic-hq.mp4' : 'assets/navigation-hq.mp4';clip.type = 'video/mp4';video.append(clip);
-  $('#dialog-content').replaceChildren(video);
-  $('#dialog-footer').textContent = 'Full HD ? Recorded directly on a Google TV Streamer.';
+const inlineVideos = [...document.querySelectorAll('video.inline-video')];
+function playInline(video) {
+  if (!video) return;
+  inlineVideos.forEach(other => { if (other !== video) other.pause(); });
+  video.hidden = false;
+  video.closest('.hero-device, .motion-preview')?.classList.add('playing-inline');
+  video.scrollIntoView({behavior:reducedMotion.matches?'instant':'smooth',block:'center'});
   video.play().catch(() => {});
+}
+$$('[data-video]').forEach(button => button.addEventListener('click', () => playInline(document.getElementById(button.getAttribute('aria-controls')))));
+inlineVideos.forEach(video => video.addEventListener('play', () => {
+  inlineVideos.forEach(other => { if (other !== video) other.pause(); });
+  video.closest('.hero-device, .motion-preview')?.classList.add('playing-inline');
 }));
+const demoFrame = $('#app-demo');
+function controlDemo(action) { demoFrame.contentWindow?.postMessage({type:'vue-demo-control',action},location.origin); }
+$$('[data-demo-control]').forEach(button => button.addEventListener('click', () => controlDemo(button.dataset.demoControl)));
+$('#demo-reset').addEventListener('click', () => controlDemo('reset'));
+$('#demo-fullscreen').addEventListener('click', async () => {
+  try { if(document.fullscreenElement) await document.exitFullscreen(); else await $('#demo-console').requestFullscreen(); }
+  catch { demoFrame.focus(); }
+});
+document.addEventListener('fullscreenchange', () => { $('#demo-fullscreen').textContent = document.fullscreenElement ? 'Exit full screen' : 'Full screen'; });
 $('#close-dialog').addEventListener('click', () => modal.close());
 modal.addEventListener('click', event => {if (event.target === modal) {const box=modal.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)modal.close();}});
 modal.addEventListener('close', () => {const video = modal.querySelector('video');if(video)video.pause();document.body.style.overflow = '';dialogReturnFocus?.focus({preventScroll:true});});

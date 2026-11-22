@@ -1,31 +1,75 @@
 {
-  "source": "Real Vue TV app screenshots captured on the user\u2019s Google TV Streamer",
+  "source": "Installed Vue TV APK on the user’s Google TV Streamer / Android 14",
+  "app_version": "0.20.9",
+  "refreshed": "2026-11-22",
+  "resolution": [
+    1920,
+    1080
+  ],
   "captures": {
-    "home": "vue-web-home.png",
-    "picks": "vue-top-pick-final-v14.png",
-    "goodfellas": "vue-web-goodfellas.png",
-    "western": "vue-web-western.png",
-    "apps": "vue-apps-final.png",
-    "app-glow": "vue-app-glow-v15.png",
-    "live": "vue-header-v18.png",
-    "follows": "vue-twitch-name-v08.png",
-    "requests": "vue-requests-final-v11.png",
-    "request-details": "vue-rich-detail-final-v12.png",
-    "profiles": "vue-avatar-picker-v17.png",
-    "profile-editor": "vue-avatar-editor-v17.png",
-    "profile-custom": "vue-avatar-persisted-v17.png",
-    "glow": "vue-glow-v15.png"
+    "home": "tools/captures-0.20.9/home.png",
+    "picks": "tools/captures-0.20.9/picks.png",
+    "goodfellas": "tools/captures-0.20.9/goodfellas.png",
+    "western": "tools/captures-0.20.9/western.png",
+    "apps": "tools/captures-0.20.9/apps.png",
+    "app-glow": "tools/captures-0.20.9/app-glow.png",
+    "glow": "tools/captures-0.20.9/glow.png",
+    "live": "tools/captures-0.20.9/live.png",
+    "follows": "tools/captures-0.20.9/follows.png",
+    "requests": "tools/captures-0.20.9/requests.png",
+    "request-details": "tools/captures-0.20.9/request-details.png",
+    "profiles": "tools/captures-0.20.9/profiles.png",
+    "profile-editor": "tools/captures-0.20.9/profile-editor.png",
+    "profile-custom": "tools/captures-0.20.9/profile-custom.png",
+    "settings": "tools/captures-0.20.9/settings.png"
   },
-  "navigation": "Fresh Android screenrecord at 1920?1080, 40 Mbps capture setting; H.264 CRF 17 web encode at native 1080p, 30 fps output; no upscaling.",
-  "generated_artwork_used": false,
   "videos": {
     "cinematic-hq.mp4": {
-      "master": "tools/vue-cinematic-hq-master.mp4",
-      "content": "Top picks artwork and focus transitions"
+      "master": "tools/captures-0.20.9/cinematic-hq-master.mp4",
+      "content": "Home hero, library picks and app-row navigation",
+      "duration_seconds": 21.13,
+      "encoding": "Native 1080p; H.264 CRF 19, 30 fps, fast-start, no audio"
     },
     "navigation-hq.mp4": {
-      "master": "tools/vue-navigation-hq-master.mp4",
-      "content": "Apps and Continue watching row navigation"
+      "master": "tools/captures-0.20.9/navigation-hq-master.mp4",
+      "content": "Apps banners and icon focus navigation",
+      "duration_seconds": 8.57,
+      "encoding": "Native 1080p; H.264 CRF 19, 30 fps, fast-start, no audio"
+    },
+    "live-tour.mp4": {
+      "master": "tools/captures-0.20.9/live-tour-master.mp4",
+      "content": "Followed Twitch channels and muted Live previews",
+      "duration_seconds": 19.93,
+      "encoding": "Native 1080p; H.264 CRF 19, 30 fps, fast-start, no audio"
+    },
+    "requests-tour.mp4": {
+      "master": "tools/captures-0.20.9/requests-tour-master.mp4",
+      "content": "Requests discoveries and available-movie details with Watch in Emby",
+      "duration_seconds": 27.73,
+      "encoding": "Native 1080p; H.264 CRF 19, 30 fps, fast-start, no audio"
+    },
+    "profiles-tour.mp4": {
+      "master": "tools/captures-0.20.9/profiles-tour-master.mp4",
+      "content": "Profile picker and draft avatar editing",
+      "duration_seconds": 20.5,
+      "encoding": "Native 1080p; H.264 CRF 19, 30 fps, fast-start, no audio"
+    },
+    "settings-tour.mp4": {
+      "master": "tools/captures-0.20.9/settings-tour-master.mp4",
+      "content": "Connection menu, cache and Live-preview settings",
+      "duration_seconds": 21.13,
+      "encoding": "Native 1080p; H.264 CRF 19, 30 fps, fast-start, no audio"
     }
-  }
+  },
+  "demo": {
+    "entry": "dist/demo.html",
+    "data": "dist/demo-data.json",
+    "layout": "960×540 density-independent coordinates from the app source",
+    "feeds": "Three Emby feed responses from the APK’s private cache; exact PickRotation selection and discovery mix for the captured half-hour window",
+    "other_data": "APK-cached Twitch lineup and display-only Jellyseerr data from the same connections; availability verified against the current-user Emby library",
+    "avatars": "Browser port of AvatarView.java and AvatarStyle.java using the profile style captured from the APK",
+    "artwork": "Actual media artwork; app icons cropped from the freshly captured Apps screen",
+    "privacy": "Only allowlisted display fields and local artwork paths. No addresses, account IDs, credentials or raw service responses. No runtime service connections."
+  },
+  "generated_artwork_used": false
 }

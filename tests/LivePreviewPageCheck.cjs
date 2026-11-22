@@ -18,6 +18,7 @@ function open(channel) {
   Player.prototype.getMuted=function(){return this.muted;};
   Player.prototype.getVolume=function(){return this.volume;};
   Player.prototype.getChannel=function(){return this.channel;};
+  Player.prototype.setChannel=function(value){this.channel=value;};
   Player.prototype.play=function(){assert.equal(this.muted,true);assert.equal(this.volume,0);};
   Player.prototype.pause=function(){this.paused=true;};
   const window={addEventListener:(event,callback)=>{windowEvents[event]=callback;},setInterval:callback=>{timers.push(callback);}};
@@ -31,10 +32,14 @@ for(const channel of ['', 'bad/channel', '<script>alert(1)</script>']){
 const page=open('XARYU');assert.equal(page.scripts[0].src,'https://player.twitch.tv/js/embed/v1.js');
 page.scripts[0].onload();page.handlers.READY();page.handlers.PLAYING();
 assert.equal(page.window.vuePreviewStatus.status,'playing');assert.equal(page.player().channel,'xaryu');
+assert.equal(page.window.vuePreviewSelect('Ludwig'),true);assert.equal(page.window.vuePreviewStatus.status,'loading');
+page.handlers.PLAYING();assert.equal(page.player().channel,'ludwig');assert.equal(page.window.vuePreviewStatus.status,'playing');
+assert.equal(page.scripts.length,1);assert.equal(page.window.vuePreviewSelect('../bad'),false);assert.equal(page.player().channel,'ludwig');
 page.player().muted=false;page.player().volume=1;page.timers[0]();
 assert.equal(page.player().muted,true);assert.equal(page.player().volume,0);
 page.document.hidden=true;page.documentEvents.visibilitychange();assert.equal(page.player().paused,true);assert.equal(page.window.vuePreviewStatus.status,'paused');
 page.windowEvents.pagehide();assert.equal(page.player().muted,true);
 for(const [event,status] of [['OFFLINE','offline'],['ENDED','ended'],['PLAYBACK_BLOCKED','blocked']]){page.handlers[event]();assert.equal(page.window.vuePreviewStatus.status,status);}
 const failed=open('xaryu');failed.scripts[0].onerror();assert.equal(failed.window.vuePreviewStatus.status,'error');
-console.log('PASS: preview channel validation, correct parent, muted autoplay, mute enforcement, pause on hide and unavailable-player fallback states');
+const booting=open('xaryu');booting.window.vuePreviewSelect('Ludwig');booting.scripts[0].onload();booting.handlers.READY();assert.equal(booting.player().channel,'ludwig');
+console.log('PASS: channel validation, muted autoplay, player reuse, selection during startup, mute enforcement, pause on hide and fallback states');

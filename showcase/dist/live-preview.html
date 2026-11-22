@@ -16,7 +16,7 @@
   const channel = (new URLSearchParams(location.search).get('channel') || '').toLowerCase();
   const state = window.vuePreviewStatus = {channel, status:'loading', muted:true, volume:0};
   if (!/^[a-z0-9_]{1,25}$/.test(channel)) { state.status='error'; return; }
-  let player;
+  let player, ready=false;
   function silence() {
     if (!player) return;
     try {
@@ -30,17 +30,30 @@
     if (player) { silence(); player.pause(); }
     state.status='paused';
   }
+  window.vuePreviewSelect = next => {
+    next=String(next).toLowerCase();
+    if (!/^[a-z0-9_]{1,25}$/.test(next)) return false;
+    state.channel=next;state.status='loading';
+    if (ready) {
+      silence();player.pause();player.setChannel(next);silence();player.play();
+    }
+    return true;
+  };
   const script = document.createElement('script');
   script.src='https://player.twitch.tv/js/embed/v1.js';
   script.onerror=()=>{state.status='error';};
   script.onload=()=>{
     try {
-      player = new Twitch.Player('player', {width:'100%', height:'100%', channel,
+      player = new Twitch.Player('player', {width:'100%', height:'100%', channel:state.channel,
         parent:[location.hostname], autoplay:true, muted:true});
-      player.addEventListener(Twitch.Player.READY, ()=>{silence();player.play();});
+      player.addEventListener(Twitch.Player.READY, ()=>{
+        ready=true;silence();
+        if(player.getChannel().toLowerCase()!==state.channel)player.setChannel(state.channel);
+        player.play();
+      });
       player.addEventListener(Twitch.Player.PLAYING, ()=>{
         silence();
-        if (player.getChannel().toLowerCase() === channel && state.muted && state.volume === 0) state.status='playing';
+        if (player.getChannel().toLowerCase() === state.channel) state.status='playing';
       });
       player.addEventListener(Twitch.Player.PLAYBACK_BLOCKED, ()=>{state.status='blocked';});
       player.addEventListener(Twitch.Player.OFFLINE, ()=>{state.status='offline';});

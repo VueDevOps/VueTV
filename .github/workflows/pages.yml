@@ -2,7 +2,7 @@ name: Showcase on GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ['showcase/dist/**', '.github/workflows/pages.yml']
+    paths: ['showcase/dist/**', 'tests/LivePreviewPageCheck.cjs', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,7 +20,9 @@ jobs:
         with:
           node-version: '22'
       - name: Check JavaScript
-        run: node --check showcase/dist/app.js
+        run: |
+          node --check showcase/dist/app.js
+          node tests/LivePreviewPageCheck.cjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

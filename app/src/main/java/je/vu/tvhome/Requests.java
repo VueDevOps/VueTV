@@ -63,7 +63,8 @@ final class Requests {
     void search(){
         if(!connected()){login();return;}
         EditText field=new EditText(host);field.setSingleLine(true);field.setHint("Movie or TV show");field.setText(query);
-        dialog(new AlertDialog.Builder(host).setTitle("Search for something to watch").setView(field).setNegativeButton("Cancel",null).setPositiveButton("Search",(d,w)->{query=field.getText().toString().trim();showingMine=false;load(false,true);}));
+        AlertDialog search=new AlertDialog.Builder(host).setTitle("Search for something to watch").setView(field).setNegativeButton("Cancel",null).setPositiveButton("Search",(d,w)->{query=field.getText().toString().trim();showingMine=false;load(false,true);}).create();
+        search.setOnShowListener(d->{style(search);KeyboardInput.configure(search,true);});search.show();
     }
     void login(){
         LinearLayout form=new LinearLayout(host);form.setOrientation(LinearLayout.VERTICAL);form.setPadding(host.dp(24),host.dp(8),host.dp(24),0);
@@ -77,7 +78,7 @@ final class Requests {
             try{java.net.URI parsed=java.net.URI.create(base);if(!"https".equals(parsed.getScheme())||parsed.getHost()==null||parsed.getUserInfo()!=null||parsed.getQuery()!=null||parsed.getFragment()!=null)throw new IllegalArgumentException();}catch(Exception e){address.setError("Enter an HTTPS server address without a query or fragment");return;}
             String name=user.getText().toString().trim();if(name.isEmpty()){user.setError("Enter your Emby username");return;}
             if(!base.equals(server())){securityCookies.clear();ratingCache.clear();ratingTimes.clear();host.prefs.edit().remove("seerrSession").remove("seerrUserId").putString("seerrServer",base).apply();}
-            String secret=password.getText().toString();signIn.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);info.setText("Signing in…");
+            KeyboardInput.hide(signIn);String secret=password.getText().toString();signIn.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);info.setText("Signing in…");
             host.io.execute(()->{try{
                 JSONObject body=new JSONObject().put("username",name).put("password",secret).put("serverType",3);
                 JSONObject account=api("/auth/jellyfin","POST",body);
@@ -190,7 +191,7 @@ final class Requests {
     static String status(int state){switch(state){case 2:return "Awaiting approval";case 3:return "Requested · processing";case 4:return "Partly available";case 5:return "Available";case 6:return "Unavailable to request";default:return "Not requested";}}
     String message(Exception failure){String text=failure.getMessage();if(text==null)return "Unable to reach VueSerr. Try again.";if(text.equals("HTTP 401"))return "Sign in again to use Requests.";if(text.equals("HTTP 403"))return "Your VueSerr account does not have permission for this action.";if(text.equals("HTTP 409"))return "This title has already been requested.";return text.startsWith("HTTP ")?"VueSerr could not complete this action ("+text+"). Check your account limits or try again.":"Unable to connect to VueSerr. Check your connection and sign-in details.";}
     void dialog(AlertDialog.Builder builder){AlertDialog dialog=builder.create();dialog.setOnShowListener(d->style(dialog));dialog.show();}
-    void style(AlertDialog dialog){if(dialog.getWindow()!=null)dialog.getWindow().setBackgroundDrawable(host.background("#18232D",18));for(int id:new int[]{AlertDialog.BUTTON_POSITIVE,AlertDialog.BUTTON_NEGATIVE})if(dialog.getButton(id)!=null)dialog.getButton(id).setTextColor(Color.rgb(211,227,239));}
+    void style(AlertDialog dialog){if(dialog.getWindow()!=null)dialog.getWindow().setBackgroundDrawable(host.background("#18232D",18));for(int id:new int[]{AlertDialog.BUTTON_POSITIVE,AlertDialog.BUTTON_NEGATIVE})if(dialog.getButton(id)!=null)dialog.getButton(id).setTextColor(Color.rgb(211,227,239));KeyboardInput.configure(dialog,false);}
 
     JSONObject api(String path,String method,JSONObject body)throws Exception{
         // Fetch CSRF cookies before writes when the server has protection enabled.

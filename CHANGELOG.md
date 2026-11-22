@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.20.7 - 2026-11-22
+
+- Hide the retained Twitch WebView outside Live so its paused video frame cannot show through Requests or Apps backgrounds. Keep the paused player available for reuse.
+- Handle keyboard Done, Next, Search and Enter explicitly in search, connection and profile dialogs. Next moves to the next field; Done hides the keyboard and focuses the dialog action; Search hides the keyboard and submits the search.
+- Hide the keyboard when text-entry dialogs dismiss, and when a connection submission starts.
+
+Validated on Google TV Streamer / Android 14: Requests search submitted from Gboard's Search key with `mInputShown=false` afterward; profile-name Done hid Gboard and focused Save without saving the draft. Switching from a playing Twitch preview into Requests paused the player and showed a neutral background. Build/lint, all six JVM checks and the hosted-player JavaScript regressions passed.
+
 ## 0.20.6 - 2026-11-22
 
 - Prepare a paused, muted Twitch player on Home after followed streams load. Entering Live reuses its initialized page instead of starting the browser and player from scratch.

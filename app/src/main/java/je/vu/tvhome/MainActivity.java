@@ -371,7 +371,7 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(dp(412),dp(192));p.setMargins(0,0,dp(20),0);cards.addView(card,p);
         }
     }
-    void storeSearch(){EditText field=new EditText(this);field.setSingleLine(true);field.setHint("App or game name");new AlertDialog.Builder(this).setTitle("Search for apps and games").setView(field).setNegativeButton("Cancel",null).setPositiveButton("Search",(d,n)->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("market://search?q="+Uri.encode(field.getText().toString()))));}catch(ActivityNotFoundException e){toast("Play Store is unavailable");}}).show();}
+    void storeSearch(){EditText field=new EditText(this);field.setSingleLine(true);field.setHint("App or game name");AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Search for apps and games").setView(field).setNegativeButton("Cancel",null).setPositiveButton("Search",(d,n)->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("market://search?q="+Uri.encode(field.getText().toString()))));}catch(ActivityNotFoundException e){toast("Play Store is unavailable");}}).show();KeyboardInput.configure(dialog,true);}
     void place(FrameLayout parent,View child,int x,int y,int width,int height){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(dp(width),dp(height));p.leftMargin=dp(x);p.topMargin=dp(y);if(child.getParent()==null)parent.addView(child,p);else child.setLayoutParams(p);}
     TextView navTab(String name,boolean selected,Runnable action){
         TextView t=text(name,14,"#E1E5E9");t.setId(View.generateViewId());t.setGravity(Gravity.CENTER);t.setDefaultFocusHighlightEnabled(false);t.setFocusableInTouchMode(true);t.setFocusable(true);t.setClickable(true);t.setBackground(background(selected?"#334A555D":"#004A555D",18));
@@ -401,7 +401,7 @@ public class MainActivity extends Activity {
         featured=media;livePreview.show(media);watchButton.setText(media.requestType.isEmpty()?"Watch now":"View details");heroTitle.setText(media.title);heroTitle.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP,media.title.length()>32?34:media.title.length()>22?42:52);heroDescription.setText(media.overview.isEmpty()?media.detail:media.overview);heroMeta.setText(media.provider.equals("Twitch")?"Live now":styledHeroMetadata(media));heroSubtitle.setText(media.provider.equals("Twitch")?"Live from your follows":"Recommended for you");heroProvider.setText(presentation==2?media.provider:media.provider.toUpperCase(Locale.ROOT));loadImage(heroImage,media.image.replace("MaxWidth=960",tintBackdrop?"MaxWidth=480":"MaxWidth=1920"),media.provider.equals("Emby"));
         carouselDots.invalidate();if(fromCard)setPresentation(2);
     }
-    void search(){EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Search your Emby library");new AlertDialog.Builder(this).setTitle("Search").setView(field).setNegativeButton("Cancel",null).setPositiveButton("Search",(d,n)->{String query=field.getText().toString().trim();if(query.isEmpty())return;io.execute(()->{try{List<Media> found=embyItems("/Users/"+prefs.getString("embyUser","")+"/Items?Recursive=true&IncludeItemTypes=Movie,Episode&SearchTerm="+Uri.encode(query)+"&Limit=24&Fields=Overview",true);main.post(()->{rows.removeAllViews();mediaRow("Search results","",found,"No matches in your library");});}catch(Exception e){main.post(()->toast("Search unavailable. Connect Emby first."));}});}).show();}
+    void search(){EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Search your Emby library");AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Search").setView(field).setNegativeButton("Cancel",null).setPositiveButton("Search",(d,n)->{String query=field.getText().toString().trim();if(query.isEmpty())return;io.execute(()->{try{List<Media> found=embyItems("/Users/"+prefs.getString("embyUser","")+"/Items?Recursive=true&IncludeItemTypes=Movie,Episode&SearchTerm="+Uri.encode(query)+"&Limit=24&Fields=Overview",true);main.post(()->{rows.removeAllViews();mediaRow("Search results","",found,"No matches in your library");});}catch(Exception e){main.post(()->toast("Search unavailable. Connect Emby first."));}});}).show();KeyboardInput.configure(dialog,true);}
     void title(String name, String subtitle) {
         TextView h=text(name,12,"#A8B0B5");h.setPadding(dp(58),dp(rows.getChildCount()==0?4:7),0,dp(10));rows.addView(h,new LinearLayout.LayoutParams(-1,dp(rows.getChildCount()==0?31:28)));
     }
@@ -773,10 +773,10 @@ public class MainActivity extends Activity {
         EditText user=field(form,"Emby username","",InputType.TYPE_CLASS_TEXT);
         EditText password=field(form,"Password (never saved)","",InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
         AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Connect your Emby library").setView(form).setPositiveButton("Sign in",null).setNegativeButton("Cancel",null).create();
-        dialog.setOnShowListener(v->dialog.getButton(-1).setOnClickListener(w->{
+        dialog.setOnShowListener(v->{KeyboardInput.configure(dialog,false);dialog.getButton(-1).setOnClickListener(w->{
             String base=address.getText().toString().trim().replaceAll("/web(?:/.*)?$","").replaceAll("/+$","");
             try{URI parsed=URI.create(base);if(!"https".equals(parsed.getScheme())||parsed.getHost()==null||parsed.getUserInfo()!=null)throw new IllegalArgumentException();}catch(Exception e){address.setError("Enter an HTTPS server address");return;}
-            String username=user.getText().toString(),pw=password.getText().toString();dialog.getButton(-1).setEnabled(false);
+            KeyboardInput.hide(dialog);String username=user.getText().toString(),pw=password.getText().toString();dialog.getButton(-1).setEnabled(false);
             io.execute(()->{try {
                 JSONObject body=new JSONObject().put("Username",username).put("Pw",pw);
                 String auth="Emby Client=\"Vue TV\", Device=\"Google TV\", DeviceId=\""+prefs.getString("device","")+"\", Version=\"0.1\"";
@@ -785,16 +785,16 @@ public class MainActivity extends Activity {
                 prefs.edit().putString("embyServer",base).putString("embyToken",response.getString("AccessToken")).putString("embyUser",response.getJSONObject("User").getString("Id")).apply();
                 main.post(()->{password.setText("");dialog.dismiss();loadFeeds();toast("Emby connected");});
             }catch(Exception e){main.post(()->{dialog.getButton(-1).setEnabled(true);password.setError("Sign-in failed: "+e.getMessage());});}});
-        }));dialog.show();
+        });});dialog.show();
     }
     void twitchSetup() {
         LinearLayout form=new LinearLayout(this);form.setOrientation(LinearLayout.VERTICAL);form.setPadding(dp(24),dp(8),dp(24),dp(8));
         form.addView(text("Use the client ID of a public Twitch developer application registered for this launcher. You will authorize read access to your followed channels on your phone. Sign-in renews automatically while used regularly; older sign-ins need one reconnect to enable this.",15,"#D0DBD6"));
         EditText client=field(form,"Twitch client ID",prefs.getString("twitchClient",""),InputType.TYPE_CLASS_TEXT);
-        new AlertDialog.Builder(this).setTitle("Connect Twitch").setView(form).setPositiveButton("Get sign-in code",(d,n)->{
+        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Connect Twitch").setView(form).setPositiveButton("Get sign-in code",(d,n)->{
             String id=client.getText().toString().trim();if(id.isEmpty()){toast("A registered Twitch client ID is required");return;}
             if(!id.equals(prefs.getString("twitchClient","")))clearTwitchSession(id);startPairing(id);
-        }).setNegativeButton("Cancel",null).show();
+        }).setNegativeButton("Cancel",null).show();KeyboardInput.configure(dialog,false);
     }
     void startPairing(String client) {
         cancelPairing();io.execute(()->{try {

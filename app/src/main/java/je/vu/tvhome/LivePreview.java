@@ -73,7 +73,7 @@ final class LivePreview {
                     }
                 });
             }
-            view.setTranslationZ(-1);view.setAlpha(1);
+            view.setTranslationZ(-1);view.setAlpha(host.currentTab.equals("Live")?1:0);
             if(view.getParent()!=host.screen){
                 if(view.getParent() instanceof ViewGroup)((ViewGroup)view.getParent()).removeView(view);
                 host.screen.addView(view,2,new FrameLayout.LayoutParams(-1,-1));
@@ -118,7 +118,7 @@ final class LivePreview {
         cancelCallbacks();channel="";playing=false;
         if(view!=null){
             WebView paused=view;long run=ticket;
-            paused.animate().cancel();paused.setTranslationZ(-1);
+            paused.animate().cancel();paused.setTranslationZ(-1);paused.setAlpha(0);
             paused.evaluateJavascript("!!(window.vuePreviewSuspend&&(window.vuePreviewSuspend(),true))",suspended->{
                 // A document still fetching its script cannot accept suspend yet.
                 // Cancel it so it cannot later autoplay outside Live.

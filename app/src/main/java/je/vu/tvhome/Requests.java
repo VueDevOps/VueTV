@@ -156,6 +156,29 @@ final class Requests {
         closeDetails();detailScreen=new RequestDetails(this,media,detail);
     }
     void closeDetails(){if(detailScreen!=null){detailScreen.close();detailScreen=null;}}
+    void findEmby(MainActivity.Media media,java.util.function.Consumer<MainActivity.Media> ready){
+        if(!host.hasEmby()||!media.id.matches("[0-9]+"))return;
+        final String server=host.server(),user=host.prefs.getString("embyUser",""),token=host.prefs.getString("embyToken","");
+        final String type=media.requestType.equals("tv")?"Series":"Movie";
+        host.io.execute(()->{
+            MainActivity.Media match=null;
+            try{
+                String url=server+"/emby/Users/"+Uri.encode(user)+"/Items?Recursive=true&IncludeItemTypes="+type+"&AnyProviderIdEquals="+Uri.encode("Tmdb."+media.id)+"&Fields=ProviderIds&Limit=20";
+                JSONObject response=new JSONObject(host.request(url,"GET",null,java.util.Collections.singletonMap("X-Emby-Token",token)));
+                JSONArray items=response.optJSONArray("Items");
+                if(items!=null)for(int i=0;i<items.length();i++){
+                    JSONObject item=items.optJSONObject(i);if(item==null)continue;
+                    JSONObject ids=item.optJSONObject("ProviderIds");String id=item.optString("Id","");
+                    // Check the returned identity too: never link by title or trust an ignored filter.
+                    if(!id.isEmpty()&&type.equals(item.optString("Type"))&&ids!=null&&media.id.equals(ids.optString("Tmdb"))){
+                        match=new MainActivity.Media(media.title,"","","Emby",id);break;
+                    }
+                }
+            }catch(Exception unavailable){/* Requests remains usable when Emby is offline. */}
+            final MainActivity.Media result=match;
+            host.main.post(()->{if(!host.isDestroyed()&&host.hasEmby()&&server.equals(host.server())&&user.equals(host.prefs.getString("embyUser",""))&&token.equals(host.prefs.getString("embyToken","")))ready.accept(result);});
+        });
+    }
     void loadRatings(MainActivity.Media media,java.util.function.Consumer<JSONObject> ready){
         String key=media.requestType+":"+media.id;JSONObject cached=ratingCache.get(key);if(cached!=null&&System.currentTimeMillis()-ratingTimes.getOrDefault(key,0L)<60*MainActivity.MINUTE){ready.accept(cached);return;}
         host.io.execute(()->{JSONObject ratings=new JSONObject();try{JSONObject response=api("/"+media.requestType+"/"+media.id+(media.requestType.equals("movie")?"/ratingscombined":"/ratings"),"GET",null);if(media.requestType.equals("movie"))ratings=response;else ratings.put("rt",response);}catch(Exception unavailable){/* Missing third-party scores never block requesting. */}

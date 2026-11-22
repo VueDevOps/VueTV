@@ -61,6 +61,7 @@ final class RequestDetails {
         TextView overview=host.text(detail.optString("overview",media.overview),14,"#C3CED7");if(overview.getText().length()==0)overview.setText("A synopsis is not available for this title yet.");overview.setLineSpacing(host.dp(3),1);copy.addView(overview);space(copy,14);
         String cast=cast();if(!cast.isEmpty()){TextView actors=host.text("Starring  "+cast,11,"#9EB0BE");actors.setMaxLines(2);copy.addView(actors);}
 
+        LinearLayout watchActions=new LinearLayout(host);watchActions.setGravity(Gravity.CENTER_VERTICAL);watchActions.setClipChildren(false);watchActions.setVisibility(View.GONE);column.addView(watchActions,new LinearLayout.LayoutParams(-1,host.dp(48)));
         LinearLayout actions=new LinearLayout(host);actions.setGravity(Gravity.CENTER_VERTICAL);actions.setClipChildren(false);column.addView(actions,new LinearLayout.LayoutParams(-1,host.dp(48)));
         TextView first=null;
         if(media.requestType.equals("tv")&&state!=5&&state!=6)first=action(actions,"Choose seasons",()->{close();requests.seasons(media,detail);},true);
@@ -69,6 +70,11 @@ final class RequestDetails {
         action(actions,"Close",this::close,false);
         window.setContentView(scene);Window androidWindow=window.getWindow();if(androidWindow!=null){androidWindow.setBackgroundDrawableResource(android.R.color.transparent);androidWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);androidWindow.setDimAmount(0);}
         window.show();if(androidWindow!=null)androidWindow.setLayout(-1,-1);first.requestFocus();
+        requests.findEmby(media,match->{
+            if(!window.isShowing()||match==null)return;
+            action(watchActions,"Watch in Emby",()->host.openEmby(match),true);
+            watchActions.setVisibility(View.VISIBLE);
+        });
         requests.loadRatings(media,ratings->{if(!window.isShowing())return;showRatings(ratings);});
     }
     String image(String field,String size){String path=detail.optString(field,"");return path.isEmpty()||path.equals("null")?"":"https://image.tmdb.org/t/p/"+size+path;}

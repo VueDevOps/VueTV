@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.20.8 - 2026-11-22
+
+- Add Watch in Emby to Requests title details when the movie or show is found in the current profile's connected Emby library.
+- Match exact TMDB IDs and Movie/Series types, then open the matched Emby item using the existing Android TV/universal client links.
+- Check Emby in the background without blocking details, trailers or requests. Hide the action when no match is found or Emby cannot be reached; discard results after connection changes or closing details.
+- Keep Choose seasons available alongside the Emby action for partly available shows.
+
+Validated on Google TV Streamer / Android 14: Iron Man details displayed Watch in Emby and the action opened the correct movie in Emby; a title absent from the library retained Request movie without an Emby action. Build/lint for debug and release, all six JVM checks, hosted-player regressions and showcase checks passed. TV-series and universal Emby client links were not exercised on-device in this update.
+
 ## 0.20.7 - 2026-11-22
 
 - Hide the retained Twitch WebView outside Live so its paused video frame cannot show through Requests or Apps backgrounds. Keep the paused player available for reuse.

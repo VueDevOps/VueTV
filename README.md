@@ -11,7 +11,7 @@ A personal Android TV launcher with cinematic Emby picks, live Twitch follows, m
 - Home, Apps, Live and Requests tabs with remote navigation, focus effects and native navigation sounds.
 - Emby Continue watching, Recently added and rotating unwatched picks, with cinematic backgrounds and optional Jellyseerr discoveries.
 - Followed live Twitch channels with device-code sign-in, automatic session renewal, muted Live previews and playback in S0undTV.
-- Jellyseerr search, discovery, title details, ratings and trailers, with confirmation before requesting movies or TV seasons.
+- Jellyseerr search, discovery, title details, ratings and trailers, with confirmation before requesting movies or TV seasons and Watch in Emby for matching library titles.
 - Up to 12 local profiles with separate sign-ins, app order, preferences and caches; customizable avatars.
 - Saved app ordering, configurable artwork caching, and optional Home-button handling.
 
@@ -19,7 +19,7 @@ Vue TV has no advertising feed or analytics SDK. Full playback opens installed a
 
 ## Install and connect
 
-1. Download `VueTV-0.20.7.apk` from [Releases](https://github.com/VueDevOps/VueTV/releases/latest) and sideload it onto your Android TV / Google TV device.
+1. Download `VueTV-0.20.8.apk` from [Releases](https://github.com/VueDevOps/VueTV/releases/latest) and sideload it onto your Android TV / Google TV device.
 2. Open **Vue TV Preview**, select the avatar, then **VueSettings**.
 3. Connect your Emby server, for example `https://emby.example.com`. Connect Twitch with your own public Twitch application's Client ID if wanted.
 4. Open **Requests / Sign in** to enter your Jellyseerr URL, for example `https://jellyseerr.example.com`, and Emby credentials.

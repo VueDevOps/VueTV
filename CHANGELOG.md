@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.20.9 - 2026-11-22
+
+- Put Watch in Emby, request/season actions, Watch trailer and Close on the same line in Requests title details.
+- Use the light button background only for the focused action. Other buttons stay dark, removing the competing white Emby/trailer buttons.
+- Place Watch in Emby first when a library match arrives and focus it if the initial action is still selected.
+
+Validated on Google TV Streamer / Android 14: the available-movie actions fit on one line; remote navigation moved the single light highlight between Close and Watch in Emby. Debug/release build and lint, all six JVM checks and hosted-player/showcase checks passed.
+
 ## 0.20.8 - 2026-11-22
 
 - Add Watch in Emby to Requests title details when the movie or show is found in the current profile's connected Emby library.

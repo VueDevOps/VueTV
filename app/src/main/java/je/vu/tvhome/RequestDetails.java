@@ -61,27 +61,28 @@ final class RequestDetails {
         TextView overview=host.text(detail.optString("overview",media.overview),14,"#C3CED7");if(overview.getText().length()==0)overview.setText("A synopsis is not available for this title yet.");overview.setLineSpacing(host.dp(3),1);copy.addView(overview);space(copy,14);
         String cast=cast();if(!cast.isEmpty()){TextView actors=host.text("Starring  "+cast,11,"#9EB0BE");actors.setMaxLines(2);copy.addView(actors);}
 
-        LinearLayout watchActions=new LinearLayout(host);watchActions.setGravity(Gravity.CENTER_VERTICAL);watchActions.setClipChildren(false);watchActions.setVisibility(View.GONE);column.addView(watchActions,new LinearLayout.LayoutParams(-1,host.dp(48)));
         LinearLayout actions=new LinearLayout(host);actions.setGravity(Gravity.CENTER_VERTICAL);actions.setClipChildren(false);column.addView(actions,new LinearLayout.LayoutParams(-1,host.dp(48)));
         TextView first=null;
-        if(media.requestType.equals("tv")&&state!=5&&state!=6)first=action(actions,"Choose seasons",()->{close();requests.seasons(media,detail);},true);
-        else if(media.requestType.equals("movie")&&(state==1||state==7))first=action(actions,"Request movie",()->{close();requests.confirm(media,null);},true);
-        String trailer=trailer();TextView trailerButton=action(actions,trailer.isEmpty()?"Find trailer":"Watch trailer",()->playTrailer(trailer),first==null);if(first==null)first=trailerButton;
-        action(actions,"Close",this::close,false);
+        if(media.requestType.equals("tv")&&state!=5&&state!=6)first=action(actions,"Choose seasons",()->{close();requests.seasons(media,detail);});
+        else if(media.requestType.equals("movie")&&(state==1||state==7))first=action(actions,"Request movie",()->{close();requests.confirm(media,null);});
+        String trailer=trailer();TextView trailerButton=action(actions,trailer.isEmpty()?"Find trailer":"Watch trailer",()->playTrailer(trailer));if(first==null)first=trailerButton;
+        action(actions,"Close",this::close);
         window.setContentView(scene);Window androidWindow=window.getWindow();if(androidWindow!=null){androidWindow.setBackgroundDrawableResource(android.R.color.transparent);androidWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);androidWindow.setDimAmount(0);}
-        window.show();if(androidWindow!=null)androidWindow.setLayout(-1,-1);first.requestFocus();
+        window.show();if(androidWindow!=null)androidWindow.setLayout(-1,-1);if(!first.requestFocus())first.requestFocusFromTouch();
+        final TextView initialAction=first;
         requests.findEmby(media,match->{
             if(!window.isShowing()||match==null)return;
-            action(watchActions,"Watch in Emby",()->host.openEmby(match),true);
-            watchActions.setVisibility(View.VISIBLE);
+            TextView watch=action(actions,"Watch in Emby",()->host.openEmby(match));
+            actions.removeView(watch);actions.addView(watch,0);
+            if(initialAction.hasFocus()&&!watch.requestFocus())watch.requestFocusFromTouch();
         });
         requests.loadRatings(media,ratings->{if(!window.isShowing())return;showRatings(ratings);});
     }
     String image(String field,String size){String path=detail.optString(field,"");return path.isEmpty()||path.equals("null")?"":"https://image.tmdb.org/t/p/"+size+path;}
     void space(LinearLayout column,int height){column.addView(new View(host),new LinearLayout.LayoutParams(1,host.dp(height)));}
-    TextView action(LinearLayout row,String label,Runnable run,boolean primary){
-        TextView button=host.text(label,14,primary?"#14212A":"#D3E3EF");button.setGravity(Gravity.CENTER);button.setPadding(host.dp(18),0,host.dp(18),0);button.setFocusable(true);button.setClickable(true);button.setDefaultFocusHighlightEnabled(false);
-        button.setBackground(host.background(primary?"#B8CEDD":"#B3263441",24));button.setOnClickListener(v->run.run());button.setOnFocusChangeListener((v,focused)->{button.setTextColor(host.color(focused?"#101820":primary?"#14212A":"#D3E3EF"));button.setBackground(host.background(focused?"#E1F2FF":primary?"#B8CEDD":"#B3263441",24));host.lift(button,focused,1.025f);});
+    TextView action(LinearLayout row,String label,Runnable run){
+        TextView button=host.text(label,14,"#D3E3EF");button.setGravity(Gravity.CENTER);button.setPadding(host.dp(14),0,host.dp(14),0);button.setFocusable(true);button.setClickable(true);button.setDefaultFocusHighlightEnabled(false);
+        button.setBackground(host.background("#B3263441",24));button.setOnClickListener(v->run.run());button.setOnFocusChangeListener((v,focused)->{button.setTextColor(host.color(focused?"#101820":"#D3E3EF"));button.setBackground(host.background(focused?"#E1F2FF":"#B3263441",24));host.lift(button,focused,1.025f);});
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,host.dp(42));p.setMargins(0,0,host.dp(10),0);row.addView(button,p);return button;
     }
     String metadata(){

@@ -22,7 +22,7 @@ Alternatively, install Android SDK Platform Tools on your computer and use ADB:
 adb pair TV_IP:PAIRING_PORT
 # The connection port may differ from the pairing port:
 adb connect TV_IP:ADB_PORT
-adb -s TV_IP:ADB_PORT install -r VueTV-0.20.8.apk
+adb -s TV_IP:ADB_PORT install -r VueTV-0.20.9.apk
 adb -s TV_IP:ADB_PORT shell am start -n je.vu.tvhome/.MainActivity
 ```
 

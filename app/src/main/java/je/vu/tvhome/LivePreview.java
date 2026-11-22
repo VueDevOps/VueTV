@@ -18,7 +18,7 @@ import java.util.Locale;
 /** A single muted player, kept below the launcher UI with artwork as its fallback. */
 final class LivePreview {
     static final String PAGE="https://vuedevops.github.io/VueTV/live-preview.html";
-    static String pageUrl(String channel){return PAGE+"?v=3&channel="+Uri.encode(channel);}
+    static String pageUrl(String channel){return PAGE+"?v=4&channel="+Uri.encode(channel);}
     final MainActivity host;
     WebView view;
     Runnable pending,poll,timeout;
@@ -27,18 +27,32 @@ final class LivePreview {
     boolean playing;
     LivePreview(MainActivity host){this.host=host;}
 
+    void prepare(MainActivity.Media media){
+        if(!host.active||host.currentTab.equals("Live")||!host.prefs.getBoolean("livePreview",true))return;
+        String next=media.id.toLowerCase(Locale.ROOT);
+        if(!media.provider.equals("Twitch")||!next.matches("[a-z0-9_]{1,25}"))return;
+        try{
+            ensureView();view.onResume();
+            if(view.getUrl()==null||view.getUrl().equals("about:blank")){
+                // Older hosted pages reject prepare-only URLs instead of autoplaying.
+                cancelCallbacks();
+                view.loadUrl(PAGE+"?v=4&prepare="+Uri.encode(next));
+                android.util.Log.i("VueLivePreview","Preparing paused player on Home");
+            }
+        }catch(RuntimeException unavailable){fail("warm-up unavailable");}
+    }
     void show(MainActivity.Media media){
-        if(!host.active||!host.currentTab.equals("Live")||!media.provider.equals("Twitch")||!host.prefs.getBoolean("livePreview",true)){stop();return;}
+        if(!host.prefs.getBoolean("livePreview",true)){destroy();return;}
+        if(!host.active||!host.currentTab.equals("Live")||!media.provider.equals("Twitch")){stop();return;}
         String next=media.id.toLowerCase(Locale.ROOT);
         if(!next.matches("[a-z0-9_]{1,25}")){stop();return;}
         if(next.equals(channel))return;
         cancelCallbacks();channel=next;playing=false;final long run=++ticket;
         if(view!=null){view.animate().cancel();view.setTranslationZ(-1);}
         pending=()->{pending=null;if(run==ticket&&host.active)start(next,run);};
-        host.main.postDelayed(pending,180);
+        host.main.postDelayed(pending,80);
     }
-    void start(String next,long run){
-        try{
+    void ensureView(){
             if(view==null){
                 if((host.getApplicationInfo().flags&android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE)!=0)WebView.setWebContentsDebuggingEnabled(true);
                 view=new WebView(host);
@@ -58,14 +72,21 @@ final class LivePreview {
                         if(view==web){view=null;stop();}if(web.getParent() instanceof ViewGroup)((ViewGroup)web.getParent()).removeView(web);web.destroy();return true;
                     }
                 });
-                // Images stay underneath as a fallback; the existing shade and UI stay above the player.
+            }
+            view.setTranslationZ(-1);view.setAlpha(1);
+            if(view.getParent()!=host.screen){
+                if(view.getParent() instanceof ViewGroup)((ViewGroup)view.getParent()).removeView(view);
                 host.screen.addView(view,2,new FrameLayout.LayoutParams(-1,-1));
             }
+    }
+    void start(String next,long run){
+        try{
+            ensureView();
             // Keep the player visible to Chromium while artwork covers it.
             // Alpha zero can suppress autoplay / decoding when changing streams.
             view.animate().cancel();view.setTranslationZ(-1);view.setAlpha(1);view.onResume();
             if(view.getUrl()!=null&&view.getUrl().startsWith(PAGE)){
-                view.evaluateJavascript("!!(window.vuePreviewSelect&&window.vuePreviewSelect("+JSONObject.quote(next)+"))",reused->{
+                view.evaluateJavascript("!!(window.vuePreviewVersion===4&&window.vuePreviewSelect&&window.vuePreviewSelect("+JSONObject.quote(next)+"))",reused->{
                     if(run!=ticket||view==null||!host.active)return;
                     if(!"true".equals(reused))view.loadUrl(pageUrl(next));
                     beginPolling(next,run);
@@ -92,11 +113,20 @@ final class LivePreview {
             if(run==ticket)host.main.postDelayed(poll,playing?1000:200);
         });}catch(RuntimeException unavailable){fail("player unavailable");}
     }
-    void fail(String reason){android.util.Log.i("VueLivePreview","Artwork fallback: "+reason);stop();}
+    void fail(String reason){android.util.Log.i("VueLivePreview","Artwork fallback: "+reason);destroy();}
     void stop(){
         cancelCallbacks();channel="";playing=false;
-        if(view!=null){view.animate().cancel();view.setAlpha(0);view.stopLoading();view.loadUrl("about:blank");view.onPause();}
+        if(view!=null){
+            WebView paused=view;long run=ticket;
+            paused.animate().cancel();paused.setTranslationZ(-1);
+            paused.evaluateJavascript("!!(window.vuePreviewSuspend&&(window.vuePreviewSuspend(),true))",suspended->{
+                // A document still fetching its script cannot accept suspend yet.
+                // Cancel it so it cannot later autoplay outside Live.
+                if(view==paused&&run==ticket&&!"true".equals(suspended)){paused.stopLoading();paused.loadUrl("about:blank");}
+            });
+        }
     }
+    void pause(){stop();if(view!=null)view.onPause();}
     void cancelCallbacks(){
         ticket++;
         if(pending!=null)host.main.removeCallbacks(pending);pending=null;

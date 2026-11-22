@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.20.6 - 2026-11-22
+
+- Prepare a paused, muted Twitch player on Home after followed streams load. Entering Live reuses its initialized page instead of starting the browser and player from scratch.
+- Keep that single WebView attached across tab changes and pause the Twitch player outside Live. Pause the WebView when the activity goes into the background; destroy it when previews are disabled or the activity ends.
+- Retry a dropped play command briefly after resume, only for the selected idle player. Keep buffering streams and paused Home preparation out of the retry path.
+- Shorten the player selection debounce from 180 to 80 ms.
+
+Google TV Streamer / Android 14 validation with the updated hosted page supplied locally through WebView debugging: entering Live after Home warm-up took 3.1 seconds; subsequent returns took 2.0–2.7 seconds; different-channel switches took 3.6–3.9 seconds. Confirmed the same player document survived tab changes, and video was paused on Home and while Settings was foregrounded. These samples are not an instant-start guarantee: opening Live before preparation completes still needs cold initialization, and stream buffering depends on Twitch and the network.
+
 ## 0.20.5 - 2026-11-22
 
 - Populate Live's three hero picks with the first three followed channels that are live, clearing Home's movie picks when changing tabs.

@@ -121,7 +121,7 @@ public class MainActivity extends Activity {
     }
     protected void onResume() { super.onResume(); active=true;motionScale=android.provider.Settings.Global.getFloat(getContentResolver(),android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,1); main.removeCallbacks(refresh);main.post(this::loadFeeds);main.postDelayed(refresh,MINUTE);main.post(()->{View focus=getCurrentFocus();if(focus!=null){restoreFocusedBackground(focus);alignFocus(focus);}}); }
     @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);if(intent.hasCategory(Intent.CATEGORY_HOME)){requests.closeDetails();currentTab="For you";draw();loadFeeds();}}
-    protected void onPause() { super.onPause();finishAppMove(true);active=false;livePreview.stop(); main.removeCallbacks(refresh);stopMotion(); cancelPairing(); }
+    protected void onPause() { super.onPause();finishAppMove(true);active=false;livePreview.pause(); main.removeCallbacks(refresh);stopMotion(); cancelPairing(); }
     protected void onDestroy() { if(livePreview!=null)livePreview.destroy();if(profilePicker!=null)profilePicker.close();if(requests!=null)requests.closeDetails();super.onDestroy(); generation++;stopMotion(); io.shutdownNow(); imageIo.shutdownNow();backdropIo.shutdownNow(); imageRequests.clear(); }
     int dp(float x) { return (int)(x*getResources().getDisplayMetrics().density+.5f); }
     int color(String s) { return Color.parseColor(s); }
@@ -143,11 +143,12 @@ public class MainActivity extends Activity {
         focusable(b,"#23312F"); b.setOnClickListener(v->click.run()); return b;
     }
     void draw() {
-        if(livePreview!=null)livePreview.destroy();
+        if(livePreview!=null)livePreview.stop();
         finishAppMove(true);stopMotion();generation++; presentation=0;renderedFeed="";lastBackdropKey="";lastBackdropSource=null;tintBackdrop=false;picksRail=null;picksHeading=null;picksFingerprint="";pendingPicks=null;latestRail=null;latestHeading=null;latestFingerprint="";pendingLatest=null;
-        screen=new FrameLayout(this);screen.setBackgroundColor(color("#0B0B0B"));setContentView(screen);
-        previousBackdrop=new BackdropImage();previousBackdrop.setScaleType(ImageView.ScaleType.CENTER_CROP);screen.addView(previousBackdrop,new FrameLayout.LayoutParams(-1,-1));
-        heroImage=new BackdropImage();heroImage.setScaleType(ImageView.ScaleType.CENTER_CROP);screen.addView(heroImage,new FrameLayout.LayoutParams(-1,-1));
+        if(screen==null){screen=new FrameLayout(this);screen.setBackgroundColor(color("#0B0B0B"));setContentView(screen);}
+        else for(int i=screen.getChildCount()-1;i>=0;i--)if(screen.getChildAt(i)!=livePreview.view)screen.removeViewAt(i);
+        previousBackdrop=new BackdropImage();previousBackdrop.setScaleType(ImageView.ScaleType.CENTER_CROP);screen.addView(previousBackdrop,0,new FrameLayout.LayoutParams(-1,-1));
+        heroImage=new BackdropImage();heroImage.setScaleType(ImageView.ScaleType.CENTER_CROP);screen.addView(heroImage,1,new FrameLayout.LayoutParams(-1,-1));
         backdropShade=new View(this);
         if(backdropShading==null){
             backdropShading=Bitmap.createBitmap(1280,720,Bitmap.Config.ARGB_8888);Canvas canvas=new Canvas(backdropShading);Paint paint=new Paint();
@@ -193,6 +194,7 @@ public class MainActivity extends Activity {
         else {placeholder("Top picks for you",hasEmby()?"Loading your library...":"Connect Emby for your recommendations",this::embyLogin);appRow(false);}
         if(bannerMedia!=null&&!currentTab.equals("Your apps")&&!currentTab.equals("Requests"))showFeatured(bannerMedia,false);
         (currentTab.equals("Requests")?requestTab:currentTab.equals("Your apps")?apps:currentTab.equals("Live")?liveTab:home).requestFocus();
+        if(livePreview.view!=null)livePreview.ensureView();
     }
     void switchTab(String tab){currentTab=tab;featuredItems.clear();featuredIndex=0;bannerMedia=null;featured=null;draw();loadFeeds();}
     boolean motionEnabled(){return motionScale>0;}
@@ -625,6 +627,7 @@ public class MainActivity extends Activity {
             main.post(()->{
                 if(isDestroyed()||run!=generation)return;
                 android.util.Log.d("VueCache","feed ready in "+(SystemClock.elapsedRealtime()-started)+" ms");
+                if(!live&&!t.isEmpty())main.post(()->{if(run==generation)livePreview.prepare(t.get(0));});
                 View focused=getCurrentFocus();
                 // Don't move focus out from under a person browsing a rail during an automatic refresh.
                 if((focused!=null&&isDescendant(focused,rows)&&rows.getChildCount()>3)||movingApp!=null){updateRecentRow(l,ee);updatePicksRow(p);return;}
@@ -752,7 +755,7 @@ public class MainActivity extends Activity {
             if(n==4){cancelPairing();clearTwitchSession(null);images.evictAll();imageTimes.clear();draw();loadFeeds();}
             if(n==5){try{startActivity(new Intent().setComponent(new ComponentName("com.google.android.apps.tv.launcherx","com.google.android.apps.tv.launcherx.home.HomeActivity")));}catch(Exception e){toast("Google TV unavailable");}}
             if(n==6)cacheSettings();
-            if(n==7){boolean enabled=!prefs.getBoolean("livePreview",true);prefs.edit().putBoolean("livePreview",enabled).apply();if(featured!=null)livePreview.show(featured);toast(enabled?"Live previews enabled and muted":"Live previews off; using artwork");}
+            if(n==7){boolean enabled=!prefs.getBoolean("livePreview",true);prefs.edit().putBoolean("livePreview",enabled).apply();if(!enabled)livePreview.destroy();else if(featured!=null)livePreview.show(featured);toast(enabled?"Live previews enabled and muted":"Live previews off; using artwork");}
         }).setNegativeButton("Close",null).show();
     }
     void cacheSettings(){

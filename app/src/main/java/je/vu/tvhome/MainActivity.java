@@ -65,6 +65,7 @@ public class MainActivity extends Activity {
     boolean rearrangingAppViews;
     Requests requests;
     TwitchSession twitchSession;
+    LivePreview livePreview;
     android.content.SharedPreferences prefs;
     ProfileStore profiles;
     ProfilePicker profilePicker;
@@ -110,7 +111,7 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         profiles=new ProfileStore(this);profileId=profiles.active().id;prefs=profiles.preferences(profileId);profilePicker=new ProfilePicker(this);
         requests=new Requests(this);
-        twitchSession=createTwitchSession();
+        twitchSession=createTwitchSession();livePreview=new LivePreview(this);
         imageDisk=new TimedDiskCache(new File(getCacheDir(),profiles.cacheFolder("artwork",profileId)),128*1024*1024L);
         feedDisk=new TimedDiskCache(new File(getCacheDir(),profiles.cacheFolder("feeds",profileId)),4*1024*1024L);
         imageTtl=prefs.getLong("artworkTtl",DAY);
@@ -120,8 +121,8 @@ public class MainActivity extends Activity {
     }
     protected void onResume() { super.onResume(); active=true;motionScale=android.provider.Settings.Global.getFloat(getContentResolver(),android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,1); main.removeCallbacks(refresh);main.post(this::loadFeeds);main.postDelayed(refresh,MINUTE);main.post(()->{View focus=getCurrentFocus();if(focus!=null){restoreFocusedBackground(focus);alignFocus(focus);}}); }
     @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);if(intent.hasCategory(Intent.CATEGORY_HOME)){requests.closeDetails();currentTab="For you";draw();loadFeeds();}}
-    protected void onPause() { super.onPause();finishAppMove(true);active=false; main.removeCallbacks(refresh);stopMotion(); cancelPairing(); }
-    protected void onDestroy() { if(profilePicker!=null)profilePicker.close();if(requests!=null)requests.closeDetails();super.onDestroy(); generation++;stopMotion(); io.shutdownNow(); imageIo.shutdownNow();backdropIo.shutdownNow(); imageRequests.clear(); }
+    protected void onPause() { super.onPause();finishAppMove(true);active=false;livePreview.stop(); main.removeCallbacks(refresh);stopMotion(); cancelPairing(); }
+    protected void onDestroy() { if(livePreview!=null)livePreview.destroy();if(profilePicker!=null)profilePicker.close();if(requests!=null)requests.closeDetails();super.onDestroy(); generation++;stopMotion(); io.shutdownNow(); imageIo.shutdownNow();backdropIo.shutdownNow(); imageRequests.clear(); }
     int dp(float x) { return (int)(x*getResources().getDisplayMetrics().density+.5f); }
     int color(String s) { return Color.parseColor(s); }
     TextView text(String value, int size, String c) {
@@ -142,6 +143,7 @@ public class MainActivity extends Activity {
         focusable(b,"#23312F"); b.setOnClickListener(v->click.run()); return b;
     }
     void draw() {
+        if(livePreview!=null)livePreview.destroy();
         finishAppMove(true);stopMotion();generation++; presentation=0;renderedFeed="";lastBackdropKey="";lastBackdropSource=null;tintBackdrop=false;picksRail=null;picksHeading=null;picksFingerprint="";pendingPicks=null;latestRail=null;latestHeading=null;latestFingerprint="";pendingLatest=null;
         screen=new FrameLayout(this);screen.setBackgroundColor(color("#0B0B0B"));setContentView(screen);
         previousBackdrop=new BackdropImage();previousBackdrop.setScaleType(ImageView.ScaleType.CENTER_CROP);screen.addView(previousBackdrop,new FrameLayout.LayoutParams(-1,-1));
@@ -394,7 +396,7 @@ public class MainActivity extends Activity {
         animateScene(before);if(mode!=2)homeScroll.post(()->{if(presentation==mode)scrolling(homeScroll,false).to(0);});
     }
     void showFeatured(Media media,boolean fromCard){
-        featured=media;watchButton.setText(media.requestType.isEmpty()?"Watch now":"View details");heroTitle.setText(media.title);heroTitle.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP,media.title.length()>32?34:media.title.length()>22?42:52);heroDescription.setText(media.overview.isEmpty()?media.detail:media.overview);heroMeta.setText(media.provider.equals("Twitch")?"Live now":styledHeroMetadata(media));heroSubtitle.setText("Recommended for you");heroProvider.setText(presentation==2?media.provider:media.provider.toUpperCase(Locale.ROOT));loadImage(heroImage,media.image.replace("MaxWidth=960",tintBackdrop?"MaxWidth=480":"MaxWidth=1920"),media.provider.equals("Emby"));
+        featured=media;livePreview.show(media);watchButton.setText(media.requestType.isEmpty()?"Watch now":"View details");heroTitle.setText(media.title);heroTitle.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP,media.title.length()>32?34:media.title.length()>22?42:52);heroDescription.setText(media.overview.isEmpty()?media.detail:media.overview);heroMeta.setText(media.provider.equals("Twitch")?"Live now":styledHeroMetadata(media));heroSubtitle.setText("Recommended for you");heroProvider.setText(presentation==2?media.provider:media.provider.toUpperCase(Locale.ROOT));loadImage(heroImage,media.image.replace("MaxWidth=960",tintBackdrop?"MaxWidth=480":"MaxWidth=1920"),media.provider.equals("Emby"));
         carouselDots.invalidate();if(fromCard)setPresentation(2);
     }
     void search(){EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Search your Emby library");new AlertDialog.Builder(this).setTitle("Search").setView(field).setNegativeButton("Cancel",null).setPositiveButton("Search",(d,n)->{String query=field.getText().toString().trim();if(query.isEmpty())return;io.execute(()->{try{List<Media> found=embyItems("/Users/"+prefs.getString("embyUser","")+"/Items?Recursive=true&IncludeItemTypes=Movie,Episode&SearchTerm="+Uri.encode(query)+"&Limit=24&Fields=Overview",true);main.post(()->{rows.removeAllViews();mediaRow("Search results","",found,"No matches in your library");});}catch(Exception e){main.post(()->toast("Search unavailable. Connect Emby first."));}});}).show();}
@@ -743,13 +745,14 @@ public class MainActivity extends Activity {
         catch(ActivityNotFoundException failure){toast("Device settings are unavailable");}
     }
     void connections() {
-        String[] options={hasEmby()?"Emby · connected":"Connect Emby",hasTwitch()?"Twitch · connected":"Connect Twitch","Refresh content","Disconnect Emby","Disconnect Twitch","Open original Google TV","Cache settings"};
+        String[] options={hasEmby()?"Emby · connected":"Connect Emby",hasTwitch()?"Twitch · connected":"Connect Twitch","Refresh content","Disconnect Emby","Disconnect Twitch","Open original Google TV","Cache settings",prefs.getBoolean("livePreview",true)?"Live previews - muted":"Live previews - off"};
         new AlertDialog.Builder(this).setTitle("Your connections").setItems(options,(d,n)->{
             if(n==0)embyLogin();if(n==1)twitchSetup();if(n==2){forceFeedRefresh=true;renderedFeed="";loadFeeds();toast("Refreshing…");}
             if(n==3){prefs.edit().remove("embyToken").remove("embyUser").apply();images.evictAll();imageTimes.clear();draw();loadFeeds();}
             if(n==4){cancelPairing();clearTwitchSession(null);images.evictAll();imageTimes.clear();draw();loadFeeds();}
             if(n==5){try{startActivity(new Intent().setComponent(new ComponentName("com.google.android.apps.tv.launcherx","com.google.android.apps.tv.launcherx.home.HomeActivity")));}catch(Exception e){toast("Google TV unavailable");}}
             if(n==6)cacheSettings();
+            if(n==7){boolean enabled=!prefs.getBoolean("livePreview",true);prefs.edit().putBoolean("livePreview",enabled).apply();if(featured!=null)livePreview.show(featured);toast(enabled?"Live previews enabled and muted":"Live previews off; using artwork");}
         }).setNegativeButton("Close",null).show();
     }
     void cacheSettings(){

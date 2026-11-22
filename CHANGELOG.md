@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.20.4 - 2026-11-22
+
+- Add an official muted Twitch player behind the Live shading and launcher UI after stream focus settles.
+- Reuse the loaded player for channel changes and shorten the selection delay; cold startup and stream buffering still depend on Twitch.
+- Keep the full thumbnail until playback starts; fall back to artwork if the player is blocked, offline, unavailable or fails to start.
+- Stop previews on channel changes, leaving Live, activity pause and destruction. Selecting a card still opens S0undTV.
+- Add a Live previews toggle in VueSettings. The hosted player receives public channel logins, without Vue TV service credentials.
+
 ## 0.20.3 - 2026-11-22
 
 - Show the focused stream thumbnail as full-screen artwork on Live, instead of an artwork-derived color wash.

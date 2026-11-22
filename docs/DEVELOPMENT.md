@@ -55,6 +55,8 @@ CI intentionally does not have the private release key and uploads only a develo
 
 ## Showcase hosting
 
+The player page has a dependency-free JavaScript check: `node tests/LivePreviewPageCheck.cjs`. GitHub Pages runs it before deploying. WebView debugging is enabled only in debuggable app builds for device verification.
+
 The site is buildless; publish `showcase/dist/`. Relative asset links support the `/VueTV/` project path. `.github/workflows/pages.yml` deploys via GitHub Actions. In repository Settings / Pages, the publishing source must be **GitHub Actions**. The canonical URL is `https://vuedevops.github.io/VueTV/`.
 
 Keep `twitch-setup.html` at the root and its hosted copy in `showcase/dist/` in sync. Local reference APKs, device logs, raw captures, tools, signing files and personal configuration are ignored and excluded from publication.

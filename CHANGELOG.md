@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.20.5 - 2026-11-22
+
+- Populate Live's three hero picks with the first three followed channels that are live, clearing Home's movie picks when changing tabs.
+- Keep the muted player visible to Chromium behind the artwork while a channel loads, then reveal it only when the selected channel is playing.
+- Switch channels through Twitch's `setChannel` without racing it with pause/play commands. Ignore unavailable events for a different channel during a switch.
+- Show only the available hero dots and label Twitch picks "Live from your follows".
+
+Validated on Google TV Streamer / Android 14 with the updated hosted player supplied locally through WebView debugging: repeated hero switches and a stream-row selection reached muted playback for summit1g, Ludwig and koil in 3.1–3.9 seconds after player selection. Initial startup still depends on Twitch and network buffering; this is not an instant-start guarantee. Build/lint, all six JVM checks, and JavaScript regressions for asynchronous and rapid channel changes passed.
+
 ## 0.20.4 - 2026-11-22
 
 - Add an official muted Twitch player behind the Live shading and launcher UI after stream focus settles.

@@ -174,7 +174,7 @@ public class MainActivity extends Activity {
         navigation.addView(new View(this),new LinearLayout.LayoutParams(0,1,1));
         TextClock clock=new TextClock(this);clock.setFormat24Hour("HH:mm");clock.setFormat12Hour("HH:mm");clock.setTextColor(color("#C3CED2"));clock.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP,16);clock.setIncludeFontPadding(false);navigation.addView(clock);
         TextView brand=text("  |  Vue TV",18,"#C3CED2");brand.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);navigation.addView(brand,new LinearLayout.LayoutParams(dp(102),-1));
-        hero=new FrameLayout(this);hero.setClipChildren(false);hero.setContentDescription("Featured recommendation");hero.setFocusable(true);hero.setClickable(true);hero.setOnClickListener(v->{if(featured!=null)open(featured);else embyLogin();});
+        hero=new FrameLayout(this);hero.setClipChildren(false);hero.setContentDescription("Featured recommendation");hero.setFocusable(true);hero.setClickable(true);hero.setOnClickListener(v->{if(featured!=null)open(featured);else if(currentTab.equals("Live"))twitchSetup();else embyLogin();});
         hero.setId(View.generateViewId());home.setNextFocusDownId(hero.getId());hero.setNextFocusUpId(home.getId());
         hero.setOnFocusChangeListener((v,f)->{if(f){setPresentation(1);showBannerBackground();}});
         hero.setOnKeyListener((v,key,e)->{if(e.getAction()==KeyEvent.ACTION_DOWN&&(key==KeyEvent.KEYCODE_DPAD_RIGHT||key==KeyEvent.KEYCODE_DPAD_LEFT)&&!featuredItems.isEmpty()){int previous=featuredIndex;featuredIndex=(featuredIndex+(key==KeyEvent.KEYCODE_DPAD_RIGHT?1:featuredItems.size()-1))%featuredItems.size();bannerMedia=featuredItems.get(featuredIndex);carouselDots.invalidate();queueFeatured(bannerMedia,true);if(previous!=featuredIndex)playNavigationSound(v,key);}return e.getAction()==KeyEvent.ACTION_DOWN&&(key==KeyEvent.KEYCODE_DPAD_RIGHT||key==KeyEvent.KEYCODE_DPAD_LEFT);});
@@ -185,7 +185,7 @@ public class MainActivity extends Activity {
         heroDescription=text("Connect your library to discover something to watch.",12,"#BFC2C5");heroDescription.setMaxLines(2);heroDescription.setEllipsize(android.text.TextUtils.TruncateAt.END);heroDescription.setVisibility(View.GONE);hero.addView(heroDescription);
         heroMeta=text("",12,"#E2E2E2");heroMeta.setVisibility(View.GONE);hero.addView(heroMeta);
         watchButton=text("Watch now",16,"#18212A");watchButton.setGravity(Gravity.CENTER);watchButton.setBackground(background("#E1F2FF",40));watchButton.setVisibility(View.GONE);hero.addView(watchButton);
-        carouselDots=new View(this){final Paint ink=new Paint(3);protected void onDraw(Canvas c){for(int i=0;i<3;i++){ink.setColor(i==featuredIndex?color("#F0F3F5"):color("#55E3E5E8"));c.drawCircle(dp(8+i*16),dp(9),dp(4),ink);}}};FrameLayout.LayoutParams dotsP=new FrameLayout.LayoutParams(dp(50),dp(18),Gravity.RIGHT|Gravity.BOTTOM);dotsP.setMargins(0,0,dp(58),dp(23));hero.addView(carouselDots,dotsP);
+        carouselDots=new View(this){final Paint ink=new Paint(3);protected void onDraw(Canvas c){for(int i=0;i<Math.min(3,featuredItems.size());i++){ink.setColor(i==featuredIndex?color("#F0F3F5"):color("#55E3E5E8"));c.drawCircle(dp(8+i*16),dp(9),dp(4),ink);}}};FrameLayout.LayoutParams dotsP=new FrameLayout.LayoutParams(dp(50),dp(18),Gravity.RIGHT|Gravity.BOTTOM);dotsP.setMargins(0,0,dp(58),dp(23));hero.addView(carouselDots,dotsP);
         rows=new LinearLayout(this);rows.setOrientation(LinearLayout.VERTICAL);rows.setClipChildren(false);page.addView(rows);
         if(currentTab.equals("Requests")){hero.setVisibility(View.GONE);showBannerBackground();requests.draw();}
         else if(currentTab.equals("Live"))placeholder("Live from your follows","Loading your followed channels...",this::twitchSetup);
@@ -194,7 +194,7 @@ public class MainActivity extends Activity {
         if(bannerMedia!=null&&!currentTab.equals("Your apps")&&!currentTab.equals("Requests"))showFeatured(bannerMedia,false);
         (currentTab.equals("Requests")?requestTab:currentTab.equals("Your apps")?apps:currentTab.equals("Live")?liveTab:home).requestFocus();
     }
-    void switchTab(String tab){currentTab=tab;draw();loadFeeds();}
+    void switchTab(String tab){currentTab=tab;featuredItems.clear();featuredIndex=0;bannerMedia=null;featured=null;draw();loadFeeds();}
     boolean motionEnabled(){return motionScale>0;}
     void lift(View view,boolean focused,float scale){if(!motionEnabled()){view.animate().cancel();view.setScaleX(focused?scale:1);view.setScaleY(focused?scale:1);return;}view.animate().scaleX(focused?scale:1).scaleY(focused?scale:1).setDuration(320).setInterpolator(motionEase).start();}
     void fade(View view,float alpha){if(!motionEnabled()){view.setAlpha(alpha);return;}view.animate().alpha(alpha).setDuration(320).setInterpolator(motionEase).start();}
@@ -396,7 +396,7 @@ public class MainActivity extends Activity {
         animateScene(before);if(mode!=2)homeScroll.post(()->{if(presentation==mode)scrolling(homeScroll,false).to(0);});
     }
     void showFeatured(Media media,boolean fromCard){
-        featured=media;livePreview.show(media);watchButton.setText(media.requestType.isEmpty()?"Watch now":"View details");heroTitle.setText(media.title);heroTitle.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP,media.title.length()>32?34:media.title.length()>22?42:52);heroDescription.setText(media.overview.isEmpty()?media.detail:media.overview);heroMeta.setText(media.provider.equals("Twitch")?"Live now":styledHeroMetadata(media));heroSubtitle.setText("Recommended for you");heroProvider.setText(presentation==2?media.provider:media.provider.toUpperCase(Locale.ROOT));loadImage(heroImage,media.image.replace("MaxWidth=960",tintBackdrop?"MaxWidth=480":"MaxWidth=1920"),media.provider.equals("Emby"));
+        featured=media;livePreview.show(media);watchButton.setText(media.requestType.isEmpty()?"Watch now":"View details");heroTitle.setText(media.title);heroTitle.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP,media.title.length()>32?34:media.title.length()>22?42:52);heroDescription.setText(media.overview.isEmpty()?media.detail:media.overview);heroMeta.setText(media.provider.equals("Twitch")?"Live now":styledHeroMetadata(media));heroSubtitle.setText(media.provider.equals("Twitch")?"Live from your follows":"Recommended for you");heroProvider.setText(presentation==2?media.provider:media.provider.toUpperCase(Locale.ROOT));loadImage(heroImage,media.image.replace("MaxWidth=960",tintBackdrop?"MaxWidth=480":"MaxWidth=1920"),media.provider.equals("Emby"));
         carouselDots.invalidate();if(fromCard)setPresentation(2);
     }
     void search(){EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Search your Emby library");new AlertDialog.Builder(this).setTitle("Search").setView(field).setNegativeButton("Cancel",null).setPositiveButton("Search",(d,n)->{String query=field.getText().toString().trim();if(query.isEmpty())return;io.execute(()->{try{List<Media> found=embyItems("/Users/"+prefs.getString("embyUser","")+"/Items?Recursive=true&IncludeItemTypes=Movie,Episode&SearchTerm="+Uri.encode(query)+"&Limit=24&Fields=Overview",true);main.post(()->{rows.removeAllViews();mediaRow("Search results","",found,"No matches in your library");});}catch(Exception e){main.post(()->toast("Search unavailable. Connect Emby first."));}});}).show();}
@@ -635,7 +635,7 @@ public class MainActivity extends Activity {
                     featuredItems.clear();featuredItems.addAll(p.subList(0,Math.min(3,p.size())));featuredIndex=Math.min(featuredIndex,featuredItems.size()-1);bannerMedia=featuredItems.get(featuredIndex);setBackdropTint(false);showFeatured(bannerMedia,false);
                     for(Media item:featuredItems)loadImage(new ImageView(this),item.image.replace("MaxWidth=960","MaxWidth=1920"),true);
                 }
-                if(live&&!t.isEmpty()){bannerMedia=t.get(0);setBackdropTint(false);showFeatured(bannerMedia,false);}
+                if(live){featuredItems.clear();featuredItems.addAll(t.subList(0,Math.min(3,t.size())));featuredIndex=0;carouselDots.invalidate();if(!t.isEmpty()){bannerMedia=t.get(0);setBackdropTint(false);showFeatured(bannerMedia,false);}else{bannerMedia=null;featured=null;livePreview.stop();}}
                 rebuildingRows=true;rows.removeAllViews();
                 if(!live) {
                     mediaRow("Top picks for you","",p,ee);

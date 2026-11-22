@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="strict-origin-when-cross-origin">
+  <link rel="preconnect" href="https://player.twitch.tv">
+  <link rel="preconnect" href="https://gql.twitch.tv" crossorigin>
   <title>Vue TV muted live preview</title>
   <style>html,body,#player{width:100%;height:100%;margin:0;overflow:hidden;background:#0b0b0b}</style>
 </head>
@@ -34,7 +36,9 @@
     if (!/^[a-z0-9_]{1,25}$/.test(next)) return false;
     state.channel=next;state.status='loading';
     if (ready) {
-      silence();player.pause();player.setChannel(next);silence();player.play();
+      // setChannel starts the new stream itself. A pause/play pair races the
+      // asynchronous channel change and can restart or pause the old stream.
+      silence();player.setChannel(next);
     }
     return true;
   };
@@ -54,9 +58,12 @@
         silence();
         if (player.getChannel().toLowerCase() === state.channel) state.status='playing';
       });
-      player.addEventListener(Twitch.Player.PLAYBACK_BLOCKED, ()=>{state.status='blocked';});
-      player.addEventListener(Twitch.Player.OFFLINE, ()=>{state.status='offline';});
-      player.addEventListener(Twitch.Player.ENDED, ()=>{state.status='ended';});
+      const unavailable = status => {
+        if (player.getChannel().toLowerCase() === state.channel) state.status=status;
+      };
+      player.addEventListener(Twitch.Player.PLAYBACK_BLOCKED, ()=>unavailable('blocked'));
+      player.addEventListener(Twitch.Player.OFFLINE, ()=>unavailable('offline'));
+      player.addEventListener(Twitch.Player.ENDED, ()=>unavailable('ended'));
       player.addEventListener(Twitch.Player.PAUSE, ()=>{if(state.status==='playing')state.status='paused';});
       window.setInterval(silence,1000);
     } catch (_) { state.status='error'; }

@@ -18,7 +18,7 @@ import java.util.Locale;
 /** A single muted player, kept below the launcher UI with artwork as its fallback. */
 final class LivePreview {
     static final String PAGE="https://vuedevops.github.io/VueTV/live-preview.html";
-    static String pageUrl(String channel){return PAGE+"?v=2&channel="+Uri.encode(channel);}
+    static String pageUrl(String channel){return PAGE+"?v=3&channel="+Uri.encode(channel);}
     final MainActivity host;
     WebView view;
     Runnable pending,poll,timeout;
@@ -33,7 +33,7 @@ final class LivePreview {
         if(!next.matches("[a-z0-9_]{1,25}")){stop();return;}
         if(next.equals(channel))return;
         cancelCallbacks();channel=next;playing=false;final long run=++ticket;
-        if(view!=null){view.animate().cancel();view.setAlpha(0);}
+        if(view!=null){view.animate().cancel();view.setTranslationZ(-1);}
         pending=()->{pending=null;if(run==ticket&&host.active)start(next,run);};
         host.main.postDelayed(pending,180);
     }
@@ -61,7 +61,9 @@ final class LivePreview {
                 // Images stay underneath as a fallback; the existing shade and UI stay above the player.
                 host.screen.addView(view,2,new FrameLayout.LayoutParams(-1,-1));
             }
-            view.animate().cancel();view.setAlpha(0);view.onResume();
+            // Keep the player visible to Chromium while artwork covers it.
+            // Alpha zero can suppress autoplay / decoding when changing streams.
+            view.animate().cancel();view.setTranslationZ(-1);view.setAlpha(1);view.onResume();
             if(view.getUrl()!=null&&view.getUrl().startsWith(PAGE)){
                 view.evaluateJavascript("!!(window.vuePreviewSelect&&window.vuePreviewSelect("+JSONObject.quote(next)+"))",reused->{
                     if(run!=ticket||view==null||!host.active)return;
@@ -83,8 +85,8 @@ final class LivePreview {
                 String raw=new JSONArray("["+encoded+"]").optString(0,"{}");JSONObject state=new JSONObject(raw);
                 String status=state.optString("status");
                 if(next.equals(state.optString("channel"))&&status.equals("playing")&&state.optBoolean("muted")){
-                    if(!playing){playing=true;view.animate().alpha(1).setDuration(host.motionEnabled()?180:0).start();android.util.Log.i("VueLivePreview","Muted live preview playing after "+(SystemClock.elapsedRealtime()-started)+" ms");}
-                }else if(status.equals("blocked")||status.equals("offline")||status.equals("error")||status.equals("ended")||(playing&&(status.equals("paused")||!state.optBoolean("muted")))){fail("playback unavailable");return;}
+                    if(!playing){playing=true;view.setTranslationZ(0);android.util.Log.i("VueLivePreview","Muted live preview playing after "+(SystemClock.elapsedRealtime()-started)+" ms");}
+                }else if(next.equals(state.optString("channel"))&&(status.equals("blocked")||status.equals("offline")||status.equals("error")||status.equals("ended")||(playing&&(status.equals("paused")||!state.optBoolean("muted"))))){fail("playback unavailable");return;}
             }catch(Exception loading){/* The page may still be booting or changing documents. */}
             if(!playing&&SystemClock.elapsedRealtime()-started>45000){fail("playback timed out");return;}
             if(run==ticket)host.main.postDelayed(poll,playing?1000:200);

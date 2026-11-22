@@ -8,6 +8,8 @@
 - Stop previews on channel changes, leaving Live, activity pause and destruction. Selecting a card still opens S0undTV.
 - Add a Live previews toggle in VueSettings. The hosted player receives public channel logins, without Vue TV service credentials.
 
+Device validation on Google TV Streamer / Android 14 confirmed muted live video and reuse of the same Twitch iframe/document across a channel switch. That single warm switch measured 2,965 ms from remote input to muted playback. Cold startup can take longer. Player state, channel validation, reuse during startup, mute enforcement, pause-on-hide and fallback states are covered by the JavaScript check. Build/lint and all six JVM checks passed.
+
 ## 0.20.3 - 2026-11-22
 
 - Show the focused stream thumbnail as full-screen artwork on Live, instead of an artwork-derived color wash.

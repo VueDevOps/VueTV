@@ -82,9 +82,9 @@ final class LivePreview {
             try{
                 String raw=new JSONArray("["+encoded+"]").optString(0,"{}");JSONObject state=new JSONObject(raw);
                 String status=state.optString("status");
-                if(next.equals(state.optString("channel"))&&status.equals("playing")&&state.optBoolean("muted")&&state.optDouble("volume",1)==0){
+                if(next.equals(state.optString("channel"))&&status.equals("playing")&&state.optBoolean("muted")){
                     if(!playing){playing=true;view.animate().alpha(1).setDuration(host.motionEnabled()?180:0).start();android.util.Log.i("VueLivePreview","Muted live preview playing after "+(SystemClock.elapsedRealtime()-started)+" ms");}
-                }else if(status.equals("blocked")||status.equals("offline")||status.equals("error")||status.equals("ended")||(playing&&(status.equals("paused")||!state.optBoolean("muted")||state.optDouble("volume",1)!=0))){fail("playback unavailable");return;}
+                }else if(status.equals("blocked")||status.equals("offline")||status.equals("error")||status.equals("ended")||(playing&&(status.equals("paused")||!state.optBoolean("muted")))){fail("playback unavailable");return;}
             }catch(Exception loading){/* The page may still be booting or changing documents. */}
             if(!playing&&SystemClock.elapsedRealtime()-started>45000){fail("playback timed out");return;}
             if(run==ticket)host.main.postDelayed(poll,playing?1000:200);

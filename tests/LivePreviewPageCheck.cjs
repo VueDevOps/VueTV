@@ -19,7 +19,7 @@ function open(channel) {
   Player.prototype.getVolume=function(){return this.volume;};
   Player.prototype.getChannel=function(){return this.channel;};
   Player.prototype.setChannel=function(value){this.channel=value;};
-  Player.prototype.play=function(){assert.equal(this.muted,true);assert.equal(this.volume,0);};
+  Player.prototype.play=function(){assert.equal(this.muted,true);};
   Player.prototype.pause=function(){this.paused=true;};
   const window={addEventListener:(event,callback)=>{windowEvents[event]=callback;},setInterval:callback=>{timers.push(callback);}};
   const document={hidden:false,createElement:()=>({}),head:{appendChild:script=>scripts.push(script)},addEventListener:(event,callback)=>{documentEvents[event]=callback;}};
@@ -36,7 +36,7 @@ assert.equal(page.window.vuePreviewSelect('Ludwig'),true);assert.equal(page.wind
 page.handlers.PLAYING();assert.equal(page.player().channel,'ludwig');assert.equal(page.window.vuePreviewStatus.status,'playing');
 assert.equal(page.scripts.length,1);assert.equal(page.window.vuePreviewSelect('../bad'),false);assert.equal(page.player().channel,'ludwig');
 page.player().muted=false;page.player().volume=1;page.timers[0]();
-assert.equal(page.player().muted,true);assert.equal(page.player().volume,0);
+assert.equal(page.player().muted,true);
 page.document.hidden=true;page.documentEvents.visibilitychange();assert.equal(page.player().paused,true);assert.equal(page.window.vuePreviewStatus.status,'paused');
 page.windowEvents.pagehide();assert.equal(page.player().muted,true);
 for(const [event,status] of [['OFFLINE','offline'],['ENDED','ended'],['PLAYBACK_BLOCKED','blocked']]){page.handlers[event]();assert.equal(page.window.vuePreviewStatus.status,status);}

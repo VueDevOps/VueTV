@@ -21,7 +21,6 @@
     if (!player) return;
     try {
       player.setMuted(true);
-      player.setVolume(0);
       state.muted = player.getMuted() === true;
       state.volume = player.getVolume();
     } catch (_) { state.muted = false; }
